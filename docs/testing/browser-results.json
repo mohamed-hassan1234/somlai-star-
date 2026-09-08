@@ -1,0 +1,743 @@
+[
+  {
+    "path": "/",
+    "role": "public",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 6
+  },
+  {
+    "path": "/about",
+    "role": "public",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 5
+  },
+  {
+    "path": "/contact",
+    "role": "public",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/login",
+    "role": "public",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 1
+  },
+  {
+    "path": "/forgot-password",
+    "role": "public",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 1
+  },
+  {
+    "path": "/manager",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/manager/students",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 8
+  },
+  {
+    "path": "/manager/parents",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 7
+  },
+  {
+    "path": "/manager/teachers",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 16
+  },
+  {
+    "path": "/manager/classes",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 8
+  },
+  {
+    "path": "/manager/subjects",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/manager/academic-years",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/manager/attendance",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 5
+  },
+  {
+    "path": "/manager/lesson-monitoring",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/manager/finance",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/manager/results",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 8
+  },
+  {
+    "path": "/manager/outside-activities",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/manager/outside-activity-committee",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 7
+  },
+  {
+    "path": "/manager/student-profile",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/manager/leave",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/manager/password-resets",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/manager/notices",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/manager/audit",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/manager/audit-logs",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/manager/notifications",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/manager/settings",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 9
+  },
+  {
+    "path": "/manager/backup",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 7
+  },
+  {
+    "path": "/manager/import",
+    "role": "school_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/teacher",
+    "role": "teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 9
+  },
+  {
+    "path": "/teacher/classes",
+    "role": "teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/teacher/lessons",
+    "role": "teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 8
+  },
+  {
+    "path": "/teacher/attendance",
+    "role": "teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/teacher/lesson-monitoring",
+    "role": "teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/teacher/quizzes",
+    "role": "teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/teacher/results",
+    "role": "teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/teacher/leave",
+    "role": "teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/teacher/chat",
+    "role": "teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 9
+  },
+  {
+    "path": "/teacher/notifications",
+    "role": "teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/teacher/profile",
+    "role": "teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 7
+  },
+  {
+    "path": "/student",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/student/lessons",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/student/lessons/1060933c-e45b-4e0c-b083-5c20d7848aa8",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/student/attendance",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/student/results",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/student/quizzes",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/student/exams",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/student/notices",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/student/ai-tools",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 18
+  },
+  {
+    "path": "/student/chat",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 9
+  },
+  {
+    "path": "/student/profile",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 6
+  },
+  {
+    "path": "/student/settings",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 9
+  },
+  {
+    "path": "/student/notifications",
+    "role": "student",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/parent",
+    "role": "parent",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/parent/attendance",
+    "role": "parent",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/parent/lesson-monitoring",
+    "role": "parent",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/parent/results",
+    "role": "parent",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/parent/lessons",
+    "role": "parent",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/parent/behavior",
+    "role": "parent",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/parent/fees",
+    "role": "parent",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/parent/notices",
+    "role": "parent",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/parent/settings",
+    "role": "parent",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 9
+  },
+  {
+    "path": "/parent/notifications",
+    "role": "parent",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/cabaas",
+    "role": "teacher_cabaas",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/cabaas/results-review",
+    "role": "teacher_cabaas",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/cabaas/teacher-attendance",
+    "role": "teacher_cabaas",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 20
+  },
+  {
+    "path": "/cabaas/student-attendance",
+    "role": "teacher_cabaas",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/cabaas/lesson-monitoring",
+    "role": "teacher_cabaas",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/cabaas/outside-activity-attendance",
+    "role": "teacher_cabaas",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/cabaas/notifications",
+    "role": "teacher_cabaas",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/practice-teacher",
+    "role": "practice_teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 5
+  },
+  {
+    "path": "/practice-teacher/students",
+    "role": "practice_teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 5
+  },
+  {
+    "path": "/practice-teacher/somali-speaking",
+    "role": "practice_teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 5
+  },
+  {
+    "path": "/practice-teacher/english-speaking",
+    "role": "practice_teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/practice-teacher/submissions",
+    "role": "practice_teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/practice-teacher/attendance",
+    "role": "practice_teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/practice-teacher/notifications",
+    "role": "practice_teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/practice-teacher/profile",
+    "role": "practice_teacher",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 7
+  },
+  {
+    "path": "/supervisor",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/supervisor/reports",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/supervisor/somali-speaking",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/supervisor/english-speaking",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/supervisor/activity",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/supervisor/teacher-attendance",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/supervisor/lesson-monitoring",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/supervisor/outside-activity-attendance",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/supervisor/chat",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 9
+  },
+  {
+    "path": "/supervisor/notifications",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/supervisor/reports-overview",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/supervisor/profile",
+    "role": "supervisor",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 7
+  },
+  {
+    "path": "/finance",
+    "role": "finance_officer",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/finance/payments",
+    "role": "finance_officer",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/finance/notifications",
+    "role": "finance_officer",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/finance-manager",
+    "role": "finance_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/finance-manager/reports",
+    "role": "finance_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/finance-manager/chat",
+    "role": "finance_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 9
+  },
+  {
+    "path": "/finance-manager/notifications",
+    "role": "finance_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/committee",
+    "role": "outside_activity_committee",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/committee/attendance",
+    "role": "outside_activity_committee",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/committee/notifications",
+    "role": "outside_activity_committee",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/attendance",
+    "role": "attendance_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 3
+  },
+  {
+    "path": "/attendance/students",
+    "role": "attendance_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "/attendance/teachers",
+    "role": "attendance_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 20
+  },
+  {
+    "path": "/attendance/notifications",
+    "role": "attendance_manager",
+    "status": "PASS",
+    "errors": [],
+    "buttons": 4
+  },
+  {
+    "path": "unauthenticated manager guard",
+    "status": "PASS"
+  },
+  {
+    "path": "contact form database persistence",
+    "status": "PASS"
+  },
+  {
+    "path": "contact responsive 390",
+    "status": "PASS"
+  },
+  {
+    "path": "contact responsive 768",
+    "status": "PASS"
+  },
+  {
+    "path": "contact responsive 1440",
+    "status": "PASS"
+  }
+]

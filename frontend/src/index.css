@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-sans: "Manrope", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-brand-50: #eef8f3;
+  --color-brand-100: #d5efe3;
+  --color-brand-200: #addfc8;
+  --color-brand-300: #78c7a6;
+  --color-brand-400: #45a880;
+  --color-brand-500: #288c66;
+  --color-brand-600: #1a7051;
+  --color-brand-700: #155a43;
+  --color-brand-800: #134837;
+  --color-brand-900: #103c2f;
+  --color-brand-950: #08221b;
+
+  --color-accent-400: #e8b84a;
+  --color-accent-500: #d4a017;
+  --color-accent-600: #b8840f;
+
+  --color-navy-50: #eef0f8;
+  --color-navy-100: #d9dcef;
+  --color-navy-200: #b4b9df;
+  --color-navy-300: #8890c8;
+  --color-navy-400: #5c66ab;
+  --color-navy-500: #3f4788;
+  --color-navy-600: #1e214f;
+  --color-navy-700: #2b2f73;
+  --color-navy-800: #171a3d;
+  --color-navy-900: #12152f;
+  --color-navy-950: #0b0d21;
+
+  --color-gold-50: #fdf8ec;
+  --color-gold-100: #f9eccb;
+  --color-gold-200: #f2d794;
+  --color-gold-300: #e8c05c;
+  --color-gold-400: #d8a534;
+  --color-gold-500: #d8a534;
+  --color-gold-600: #c08d1c;
+  --color-gold-700: #9e7018;
+  --color-gold-800: #81591a;
+  --color-gold-900: #6d4a1b;
+
+  --color-ink-50: #f6f7f6;
+  --color-ink-100: #e8ebe9;
+  --color-ink-200: #d1d7d3;
+  --color-ink-300: #aab5af;
+  --color-ink-400: #7d8c84;
+  --color-ink-500: #62716a;
+  --color-ink-600: #4d5a54;
+  --color-ink-700: #404a45;
+  --color-ink-800: #363e3a;
+  --color-ink-900: #2f3632;
+  --color-ink-950: #181c1a;
+
+  --color-surface: #f4f7f5;
+  --color-surface-elevated: #ffffff;
+  --color-danger: #c0392b;
+  --color-warning: #c47a12;
+  --color-success: #1f7a4d;
+}
+
+@layer base {
+  html {
+    @apply antialiased scroll-smooth;
+  }
+
+  body {
+    @apply bg-surface text-ink-900 font-sans min-h-screen;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 10% -10%, rgba(30, 33, 79, 0.1), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(216, 165, 52, 0.1), transparent);
+  }
+
+  .dark body {
+    @apply bg-ink-950 text-ink-100;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 10% -10%, rgba(30, 33, 79, 0.22), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(216, 165, 52, 0.08), transparent);
+  }
+
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+}

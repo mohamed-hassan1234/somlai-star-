@@ -1,0 +1,40 @@
+{
+  "name": "somali-star-academy-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch server.ts",
+    "start": "tsx server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "seed": "tsx scripts/seed.js",
+    "import": "tsx scripts/import.ts"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongoose": "^8.19.0",
+    "bcryptjs": "^3.0.2",
+    "jose": "^6.0.11",
+    "multer": "^2.0.2",
+    "ws": "^8.18.3",
+    "cors": "^2.8.5",
+    "helmet": "^8.1.0",
+    "express-rate-limit": "^8.1.0",
+    "tsx": "^4.20.6",
+    "nanoid": "^5.1.5",
+    "mongodb": "^6.16.0"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "@types/node": "^24.13.2",
+    "@types/express": "^5.0.3",
+    "@types/cors": "^2.8.19",
+    "@types/multer": "^2.0.0",
+    "@types/ws": "^8.18.1",
+    "@playwright/test": "^1.55.1"
+  }
+}

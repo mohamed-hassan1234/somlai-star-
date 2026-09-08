@@ -1,0 +1,14 @@
+node_modules/
+.test-data/
+.test-uploads/
+test-results/
+playwright-report/
+backend/uploads/
+backend/data/
+
+*.bak
+temp_*.mjs
+backups/
+dist/
+scripts/.backup-config.json
+*.log

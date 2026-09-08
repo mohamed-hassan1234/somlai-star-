@@ -1,0 +1,2393 @@
+{
+  "profiles": {
+    "id": {
+      "type": "uuid",
+      "required": true
+    },
+    "login_id": {
+      "type": "text",
+      "required": true,
+      "unique": true
+    },
+    "full_name": {
+      "type": "text",
+      "required": true
+    },
+    "role": {
+      "type": "public.app_role",
+      "required": true,
+      "enum": [
+        "student",
+        "teacher",
+        "teacher_cabaas",
+        "practice_teacher",
+        "finance_officer",
+        "finance_manager",
+        "attendance_manager",
+        "outside_activity_committee",
+        "school_manager",
+        "supervisor",
+        "parent"
+      ]
+    },
+    "phone": {
+      "type": "text",
+      "required": false
+    },
+    "avatar_url": {
+      "type": "text",
+      "required": false
+    },
+    "status": {
+      "type": "public.account_status",
+      "required": true,
+      "enum": [
+        "active",
+        "disabled",
+        "pending"
+      ],
+      "default": "'active'"
+    },
+    "permissions": {
+      "type": "jsonb",
+      "required": true,
+      "default": "'{}'"
+    },
+    "must_change_password": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "created_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "deleted_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "followers_count": {
+      "type": "integer",
+      "required": true,
+      "default": "0"
+    },
+    "following_count": {
+      "type": "integer",
+      "required": true,
+      "default": "0"
+    }
+  },
+  "academic_years": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "name": {
+      "type": "text",
+      "required": true,
+      "unique": true
+    },
+    "start_date": {
+      "type": "date",
+      "required": true
+    },
+    "end_date": {
+      "type": "date",
+      "required": true
+    },
+    "is_active": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "is_archived": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "classes": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "name": {
+      "type": "text",
+      "required": true
+    },
+    "schedule_slot": {
+      "type": "text",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": false
+    },
+    "academic_year_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "academic_years"
+    },
+    "capacity": {
+      "type": "int",
+      "required": false,
+      "default": "40"
+    },
+    "is_active": {
+      "type": "boolean",
+      "required": true,
+      "default": "true"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "subjects": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "name": {
+      "type": "text",
+      "required": true,
+      "unique": true
+    },
+    "code": {
+      "type": "text",
+      "required": false,
+      "unique": true
+    },
+    "description": {
+      "type": "text",
+      "required": false
+    },
+    "is_active": {
+      "type": "boolean",
+      "required": true,
+      "default": "true"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "students": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "profile_id": {
+      "type": "uuid",
+      "required": true,
+      "unique": true,
+      "ref": "profiles"
+    },
+    "student_id": {
+      "type": "text",
+      "required": true,
+      "unique": true
+    },
+    "parent_name": {
+      "type": "text",
+      "required": true
+    },
+    "parent_phone": {
+      "type": "text",
+      "required": true
+    },
+    "phone": {
+      "type": "text",
+      "required": false
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "classes"
+    },
+    "academic_year_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "academic_years"
+    },
+    "password_set": {
+      "type": "boolean",
+      "required": true,
+      "default": "true"
+    },
+    "registration_date": {
+      "type": "date",
+      "required": true,
+      "default": "CURRENT_DATE"
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "teachers": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "profile_id": {
+      "type": "uuid",
+      "required": true,
+      "unique": true,
+      "ref": "profiles"
+    },
+    "teacher_id": {
+      "type": "text",
+      "required": true,
+      "unique": true
+    },
+    "specialization": {
+      "type": "text",
+      "required": false
+    },
+    "hire_date": {
+      "type": "date",
+      "required": false,
+      "default": "CURRENT_DATE"
+    },
+    "is_practice": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "teacher_classes": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "teacher_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "teachers"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    },
+    "assigned_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "assigned_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    }
+  },
+  "teacher_subjects": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "teacher_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "teachers"
+    },
+    "subject_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "subjects"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "classes"
+    },
+    "assigned_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "class_subjects": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    },
+    "subject_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "subjects"
+    }
+  },
+  "lessons": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "title": {
+      "type": "text",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": false
+    },
+    "subject_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "subjects"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    },
+    "teacher_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "teachers"
+    },
+    "lesson_date": {
+      "type": "date",
+      "required": true,
+      "default": "CURRENT_DATE"
+    },
+    "is_published": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "deleted_at": {
+      "type": "timestamptz",
+      "required": false
+    }
+  },
+  "lesson_files": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "lesson_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "lessons"
+    },
+    "file_name": {
+      "type": "text",
+      "required": true
+    },
+    "file_path": {
+      "type": "text",
+      "required": true
+    },
+    "file_type": {
+      "type": "text",
+      "required": true
+    },
+    "mime_type": {
+      "type": "text",
+      "required": false
+    },
+    "file_size": {
+      "type": "bigint",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "attendance": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "student_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "students"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    },
+    "teacher_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "teachers"
+    },
+    "attendance_date": {
+      "type": "date",
+      "required": true
+    },
+    "status": {
+      "type": "public.attendance_status",
+      "required": true,
+      "enum": [
+        "present",
+        "absent",
+        "late",
+        "leave",
+        "excused"
+      ]
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "recorded_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "teacher_attendance": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "teacher_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "teachers"
+    },
+    "attendance_date": {
+      "type": "date",
+      "required": true
+    },
+    "status": {
+      "type": "public.attendance_status",
+      "required": true,
+      "enum": [
+        "present",
+        "absent",
+        "late",
+        "leave",
+        "excused"
+      ]
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "recorded_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "is_auto": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "teacher_leave": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "teacher_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "teachers"
+    },
+    "start_date": {
+      "type": "date",
+      "required": true
+    },
+    "end_date": {
+      "type": "date",
+      "required": true
+    },
+    "reason": {
+      "type": "text",
+      "required": true
+    },
+    "status": {
+      "type": "public.leave_status",
+      "required": true,
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "'pending'"
+    },
+    "reviewed_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "reviewed_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "review_notes": {
+      "type": "text",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "quizzes": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "title": {
+      "type": "text",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": false
+    },
+    "subject_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "subjects"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    },
+    "teacher_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "teachers"
+    },
+    "time_limit_minutes": {
+      "type": "int",
+      "required": false
+    },
+    "total_marks": {
+      "type": "numeric(8,2)",
+      "required": false,
+      "default": "0"
+    },
+    "start_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "end_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "is_published": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "deleted_at": {
+      "type": "timestamptz",
+      "required": false
+    }
+  },
+  "quiz_questions": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "quiz_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "quizzes"
+    },
+    "question_text": {
+      "type": "text",
+      "required": true
+    },
+    "question_type": {
+      "type": "public.question_type",
+      "required": true,
+      "enum": [
+        "multiple_choice",
+        "true_false",
+        "short_answer"
+      ]
+    },
+    "marks": {
+      "type": "numeric(8,2)",
+      "required": true,
+      "default": "1"
+    },
+    "correct_answer": {
+      "type": "text",
+      "required": false
+    },
+    "sort_order": {
+      "type": "int",
+      "required": true,
+      "default": "0"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "quiz_options": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "question_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "quiz_questions"
+    },
+    "option_text": {
+      "type": "text",
+      "required": true
+    },
+    "is_correct": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "sort_order": {
+      "type": "int",
+      "required": true,
+      "default": "0"
+    }
+  },
+  "quiz_attempts": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "quiz_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "quizzes"
+    },
+    "student_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "students"
+    },
+    "score": {
+      "type": "numeric(8,2)",
+      "required": false
+    },
+    "max_score": {
+      "type": "numeric(8,2)",
+      "required": false
+    },
+    "started_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "submitted_at": {
+      "type": "timestamptz",
+      "required": false
+    }
+  },
+  "quiz_answers": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "attempt_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "quiz_attempts"
+    },
+    "question_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "quiz_questions"
+    },
+    "answer_text": {
+      "type": "text",
+      "required": false
+    },
+    "selected_option_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "quiz_options"
+    },
+    "is_correct": {
+      "type": "boolean",
+      "required": false
+    },
+    "marks_awarded": {
+      "type": "numeric(8,2)",
+      "required": false,
+      "default": "0"
+    }
+  },
+  "result_submissions": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "title": {
+      "type": "text",
+      "required": true
+    },
+    "subject_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "subjects"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    },
+    "teacher_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "teachers"
+    },
+    "academic_year_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "academic_years"
+    },
+    "exam_type": {
+      "type": "text",
+      "required": false
+    },
+    "status": {
+      "type": "public.result_status",
+      "required": true,
+      "enum": [
+        "draft",
+        "pending_review",
+        "approved",
+        "published",
+        "rejected"
+      ],
+      "default": "'draft'"
+    },
+    "submitted_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "reviewed_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "reviewed_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "review_notes": {
+      "type": "text",
+      "required": false
+    },
+    "published_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "results": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "submission_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "result_submissions"
+    },
+    "student_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "students"
+    },
+    "marks_obtained": {
+      "type": "numeric(8,2)",
+      "required": true
+    },
+    "max_marks": {
+      "type": "numeric(8,2)",
+      "required": true,
+      "default": "100"
+    },
+    "grade": {
+      "type": "text",
+      "required": false
+    },
+    "remarks": {
+      "type": "text",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "result_approvals": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "submission_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "result_submissions"
+    },
+    "reviewer_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "action": {
+      "type": "text",
+      "required": true,
+      "enum": [
+        "approve",
+        "reject",
+        "publish"
+      ]
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "exam_schedules": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "title": {
+      "type": "text",
+      "required": true
+    },
+    "subject_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "subjects"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "classes"
+    },
+    "exam_date": {
+      "type": "date",
+      "required": true
+    },
+    "start_time": {
+      "type": "time",
+      "required": false
+    },
+    "end_time": {
+      "type": "time",
+      "required": false
+    },
+    "venue": {
+      "type": "text",
+      "required": false
+    },
+    "description": {
+      "type": "text",
+      "required": false
+    },
+    "created_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "notices": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "title": {
+      "type": "text",
+      "required": true
+    },
+    "body": {
+      "type": "text",
+      "required": true
+    },
+    "notice_type": {
+      "type": "text",
+      "required": false,
+      "default": "'general'"
+    },
+    "target_role": {
+      "type": "public.app_role",
+      "required": false,
+      "enum": [
+        "student",
+        "teacher",
+        "teacher_cabaas",
+        "practice_teacher",
+        "finance_officer",
+        "finance_manager",
+        "attendance_manager",
+        "outside_activity_committee",
+        "school_manager",
+        "supervisor",
+        "parent"
+      ]
+    },
+    "target_class_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "classes"
+    },
+    "is_practice": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "is_late_notice": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "published_by": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "is_published": {
+      "type": "boolean",
+      "required": true,
+      "default": "true"
+    },
+    "published_at": {
+      "type": "timestamptz",
+      "required": false,
+      "default": "now()"
+    },
+    "expires_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "finance_records": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "student_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "students"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "classes"
+    },
+    "month": {
+      "type": "int",
+      "required": true
+    },
+    "year": {
+      "type": "int",
+      "required": true
+    },
+    "status": {
+      "type": "public.payment_status",
+      "required": true,
+      "enum": [
+        "paid",
+        "unpaid",
+        "scholarship_nb"
+      ],
+      "default": "'unpaid'"
+    },
+    "amount": {
+      "type": "numeric(12,2)",
+      "required": false
+    },
+    "currency": {
+      "type": "text",
+      "required": false,
+      "default": "'USD'"
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "recorded_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "outside_activity_committees": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "name": {
+      "type": "text",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": false
+    },
+    "created_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "committee_members": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "committee_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "outside_activity_committees"
+    },
+    "profile_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    }
+  },
+  "committee_classes": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "committee_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "outside_activity_committees"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    }
+  },
+  "outside_activity_attendance": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "committee_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "outside_activity_committees"
+    },
+    "student_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "students"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    },
+    "activity_date": {
+      "type": "date",
+      "required": true
+    },
+    "status": {
+      "type": "public.attendance_status",
+      "required": true,
+      "enum": [
+        "present",
+        "absent",
+        "late",
+        "leave",
+        "excused"
+      ]
+    },
+    "recorded_by": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "activity_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "outside_activities"
+    },
+    "recorded_at": {
+      "type": "timestamptz",
+      "required": false,
+      "default": "now()"
+    },
+    "location": {
+      "type": "text",
+      "required": false
+    },
+    "updated_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": false,
+      "default": "now()"
+    },
+    "edit_count": {
+      "type": "integer",
+      "required": true,
+      "default": "0"
+    }
+  },
+  "follows": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "follower_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "following_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "chat_conversations": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "is_group": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "title": {
+      "type": "text",
+      "required": false
+    },
+    "created_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "chat_participants": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "conversation_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "chat_conversations"
+    },
+    "profile_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "joined_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "last_read_at": {
+      "type": "timestamptz",
+      "required": false
+    }
+  },
+  "chat_messages": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "conversation_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "chat_conversations"
+    },
+    "sender_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "body": {
+      "type": "text",
+      "required": true
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "media_type": {
+      "type": "text",
+      "required": true,
+      "enum": [
+        "text",
+        "voice",
+        "image",
+        "video"
+      ],
+      "default": "'text'"
+    },
+    "media_url": {
+      "type": "text",
+      "required": false
+    }
+  },
+  "ai_conversations": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "profile_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "tool_type": {
+      "type": "text",
+      "required": true
+    },
+    "title": {
+      "type": "text",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "ai_messages": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "conversation_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "ai_conversations"
+    },
+    "role": {
+      "type": "text",
+      "required": true,
+      "enum": [
+        "user",
+        "assistant",
+        "system"
+      ]
+    },
+    "content": {
+      "type": "text",
+      "required": true
+    },
+    "metadata": {
+      "type": "jsonb",
+      "required": false,
+      "default": "'{}'"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "notifications": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "profile_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "title": {
+      "type": "text",
+      "required": true
+    },
+    "body": {
+      "type": "text",
+      "required": true
+    },
+    "type": {
+      "type": "public.notification_type",
+      "required": true,
+      "enum": [
+        "lesson",
+        "quiz",
+        "result",
+        "notice",
+        "exam",
+        "leave",
+        "assignment",
+        "chat",
+        "system",
+        "finance",
+        "practice"
+      ],
+      "default": "'system'"
+    },
+    "link": {
+      "type": "text",
+      "required": false
+    },
+    "is_read": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "metadata": {
+      "type": "jsonb",
+      "required": false,
+      "default": "'{}'"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "sender_user_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "reference_id": {
+      "type": "uuid",
+      "required": false
+    }
+  },
+  "audit_logs": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "actor_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "action": {
+      "type": "text",
+      "required": true
+    },
+    "entity": {
+      "type": "text",
+      "required": true
+    },
+    "entity_id": {
+      "type": "text",
+      "required": false
+    },
+    "metadata": {
+      "type": "jsonb",
+      "required": false,
+      "default": "'{}'"
+    },
+    "ip_address": {
+      "type": "text",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "practice_attendance": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "student_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "students"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    },
+    "recorded_by": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "practice_date": {
+      "type": "date",
+      "required": true
+    },
+    "status": {
+      "type": "public.attendance_status",
+      "required": true,
+      "enum": [
+        "present",
+        "absent",
+        "late",
+        "leave",
+        "excused"
+      ]
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "password_reset_requests": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "login_id": {
+      "type": "text",
+      "required": true
+    },
+    "requester_note": {
+      "type": "text",
+      "required": false
+    },
+    "status": {
+      "type": "text",
+      "required": true,
+      "enum": [
+        "pending",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "'pending'"
+    },
+    "resolved_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "resolved_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "student_behavior": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "student_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "students"
+    },
+    "behavior_date": {
+      "type": "date",
+      "required": true,
+      "default": "CURRENT_DATE"
+    },
+    "category": {
+      "type": "text",
+      "required": true,
+      "enum": [
+        "positive",
+        "negative",
+        "warning",
+        "achievement"
+      ]
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "action_taken": {
+      "type": "text",
+      "required": false
+    },
+    "recorded_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "practice_students": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "student_name": {
+      "type": "text",
+      "required": true
+    },
+    "student_id": {
+      "type": "text",
+      "required": false
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "classes"
+    },
+    "practice_type": {
+      "type": "text",
+      "required": true,
+      "enum": [
+        "somali_speaking",
+        "english_speaking"
+      ]
+    },
+    "language": {
+      "type": "text",
+      "required": true,
+      "enum": [
+        "somali",
+        "english"
+      ]
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "status": {
+      "type": "text",
+      "required": true,
+      "enum": [
+        "draft",
+        "submitted"
+      ],
+      "default": "'draft'"
+    },
+    "created_by": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "updated_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "submitted_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "submitted_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    }
+  },
+  "activity_logs": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "user_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "action": {
+      "type": "text",
+      "required": true
+    },
+    "entity_type": {
+      "type": "text",
+      "required": true
+    },
+    "entity_id": {
+      "type": "uuid",
+      "required": false
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "metadata": {
+      "type": "jsonb",
+      "required": false,
+      "default": "'{}'"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "chat_posts": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "author_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "body": {
+      "type": "text",
+      "required": true
+    },
+    "media_url": {
+      "type": "text",
+      "required": false
+    },
+    "likes_count": {
+      "type": "int",
+      "required": true,
+      "default": "0"
+    },
+    "comments_count": {
+      "type": "int",
+      "required": true,
+      "default": "0"
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "media_type": {
+      "type": "text",
+      "required": true,
+      "enum": [
+        "text",
+        "image",
+        "video"
+      ],
+      "default": "'text'"
+    }
+  },
+  "chat_post_comments": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "post_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "chat_posts"
+    },
+    "author_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "parent_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "chat_post_comments"
+    },
+    "body": {
+      "type": "text",
+      "required": true
+    },
+    "is_deleted": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "chat_post_reactions": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "post_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "chat_posts"
+    },
+    "user_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "emoji": {
+      "type": "text",
+      "required": true,
+      "default": "'heart'"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "outside_activities": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "name": {
+      "type": "text",
+      "required": true
+    },
+    "activity_type": {
+      "type": "text",
+      "required": true,
+      "default": "'other'"
+    },
+    "activity_date": {
+      "type": "date",
+      "required": true
+    },
+    "start_time": {
+      "type": "time",
+      "required": false
+    },
+    "end_time": {
+      "type": "time",
+      "required": false
+    },
+    "location": {
+      "type": "text",
+      "required": false
+    },
+    "description": {
+      "type": "text",
+      "required": false
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    },
+    "created_by": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "deleted_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "committee_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "outside_activity_committees"
+    },
+    "is_cancelled": {
+      "type": "boolean",
+      "required": true,
+      "default": "false"
+    }
+  },
+  "committee_member_classes": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "committee_member_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "committee_members"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    },
+    "assigned_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "assigned_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "student_parents": {
+    "parent_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "student_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "students"
+    },
+    "linked_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "calls": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "caller_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "callee_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "profiles"
+    },
+    "status": {
+      "type": "text",
+      "required": true,
+      "enum": [
+        "ringing",
+        "active",
+        "ended",
+        "missed",
+        "declined"
+      ],
+      "default": "'ringing'"
+    },
+    "started_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "answered_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "ended_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "lesson_monitoring": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "student_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "students"
+    },
+    "class_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "classes"
+    },
+    "teacher_id": {
+      "type": "uuid",
+      "required": true,
+      "ref": "teachers"
+    },
+    "monitoring_date": {
+      "type": "date",
+      "required": true,
+      "default": "CURRENT_DATE"
+    },
+    "status": {
+      "type": "public.attendance_status",
+      "required": true,
+      "enum": [
+        "present",
+        "absent",
+        "late",
+        "leave",
+        "excused"
+      ],
+      "default": "'present'"
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "recorded_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "backups": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "file_name": {
+      "type": "text",
+      "required": true
+    },
+    "format": {
+      "type": "text",
+      "required": true,
+      "default": "'sql'"
+    },
+    "backup_type": {
+      "type": "text",
+      "required": true,
+      "default": "'manual'"
+    },
+    "file_size": {
+      "type": "bigint",
+      "required": true,
+      "default": "0"
+    },
+    "checksum": {
+      "type": "text",
+      "required": true
+    },
+    "status": {
+      "type": "text",
+      "required": true,
+      "default": "'completed'"
+    },
+    "storage_path": {
+      "type": "text",
+      "required": false
+    },
+    "created_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "started_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "completed_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "error": {
+      "type": "text",
+      "required": false
+    }
+  },
+  "backup_logs": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "actor_id": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "action": {
+      "type": "text",
+      "required": true
+    },
+    "file_name": {
+      "type": "text",
+      "required": false
+    },
+    "status": {
+      "type": "text",
+      "required": true,
+      "default": "'success'"
+    },
+    "metadata": {
+      "type": "jsonb",
+      "required": false,
+      "default": "'{}'"
+    },
+    "error": {
+      "type": "text",
+      "required": false
+    },
+    "ip_address": {
+      "type": "text",
+      "required": false
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "import_jobs": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "file_name": {
+      "type": "text",
+      "required": true
+    },
+    "module": {
+      "type": "text",
+      "required": true
+    },
+    "total_rows": {
+      "type": "int",
+      "required": true,
+      "default": "0"
+    },
+    "valid_rows": {
+      "type": "int",
+      "required": true,
+      "default": "0"
+    },
+    "error_rows": {
+      "type": "int",
+      "required": true,
+      "default": "0"
+    },
+    "duplicate_rows": {
+      "type": "int",
+      "required": true,
+      "default": "0"
+    },
+    "status": {
+      "type": "text",
+      "required": true,
+      "default": "'pending'"
+    },
+    "errors": {
+      "type": "jsonb",
+      "required": false,
+      "default": "'[]'"
+    },
+    "report_path": {
+      "type": "text",
+      "required": false
+    },
+    "created_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "completed_at": {
+      "type": "timestamptz",
+      "required": false
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "app_settings": {
+    "key": {
+      "type": "text",
+      "required": true
+    },
+    "value": {
+      "type": "jsonb",
+      "required": true,
+      "default": "'{}'"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  }
+}
