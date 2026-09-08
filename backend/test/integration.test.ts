@@ -15,6 +15,11 @@ test('MongoDB-backed application workflows and security',async t=>{
     assert.equal((await api('/resources/profiles')).status,401)
     assert.equal((await api('/resources/profiles',{token:'invalid'})).status,401)
     assert.equal((await api('/health',{headers:{Origin:'https://untrusted.example'}})).status,403)
+    const preflight=await fetch(f.base+'/auth/token?grant_type=password',{method:'OPTIONS',headers:{
+      Origin:'http://localhost.:5173','Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type',
+    }})
+    assert.equal(preflight.status,204)
+    assert.equal(preflight.headers.get('access-control-allow-origin'),'http://localhost.:5173')
     const malformed=await fetch(f.base+'/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:'{'})
     assert.equal(malformed.status,400)
   })

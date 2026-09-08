@@ -30,8 +30,10 @@ SEED_DEFAULT_PASSWORD=<unique-initial-password-12-to-72-bytes>
 Build the frontend with:
 
 ```env
-VITE_API_URL=https://somalistaracedemy.elivateict.com/api
+VITE_API_URL=/api
 ```
+
+Using `/api` keeps browser requests on the exact origin that served the page, including hostname aliases, and avoids unnecessary cross-origin preflights. It resolves publicly to `https://somalistaracedemy.elivateict.com/api` on the canonical domain.
 
 ## Reverse proxy
 

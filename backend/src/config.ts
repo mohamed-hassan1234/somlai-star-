@@ -27,6 +27,12 @@ function req(name: string): string {
   return v
 }
 
+export function normalizeOrigin(value:string):string {
+  const url=new URL(value.trim())
+  url.hostname=url.hostname.toLowerCase().replace(/\.+$/u,'')
+  return url.origin
+}
+
 export const config = {
   mongodbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/somali_star_academy',
   jwtSecret: req('JWT_SECRET'),
@@ -35,7 +41,7 @@ export const config = {
     .map(value => value.trim())
     .filter(Boolean)
     .map(value => {
-      try { return new URL(value).origin }
+      try { return normalizeOrigin(value) }
       catch { throw new Error(`Invalid CLIENT_URL origin: ${value}`) }
     }),
   accessTokenTtl: process.env.ACCESS_TOKEN_TTL || '3600s',

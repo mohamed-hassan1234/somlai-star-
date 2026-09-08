@@ -23,9 +23,10 @@ function runSeed(uri:string) {
 }
 
 test('complete seed is valid and idempotent',async()=>{
-  const stopMongo=await ensureTestMongo()
+  const port=27029
+  const stopMongo=await ensureTestMongo(port)
   const dbName='academy_seed_test_'+randomUUID().replaceAll('-','')
-  const uri=`mongodb://127.0.0.1:27028/${dbName}`
+  const uri=`mongodb://127.0.0.1:${port}/${dbName}`
   const client=new MongoClient(uri)
   try {
     const first=await runSeed(uri)

@@ -1,5 +1,5 @@
 node_modules/
-.test-data/
+.test-data*/
 .test-uploads/
 test-results/
 playwright-report/
