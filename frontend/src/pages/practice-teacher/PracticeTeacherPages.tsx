@@ -39,6 +39,14 @@ export function PracticeTeacherDashboardPage() {
     () => (students.data ?? []).filter((s) => s.status === 'draft').length,
     [students.data],
   )
+  const amardiido = useMemo(
+    () => (students.data ?? []).filter((s) => s.behavior === 'amardiido').length,
+    [students.data],
+  )
+  const somaliSpeaking = useMemo(
+    () => (students.data ?? []).filter((s) => s.practice_type === 'somali_speaking').length,
+    [students.data],
+  )
 
   return (
     <div>
@@ -56,15 +64,23 @@ export function PracticeTeacherDashboardPage() {
           <p className="text-2xl font-bold text-amber-600">{drafts}</p>
           <p className="text-sm text-ink-500">Drafts</p>
         </Card>
+        <Card className="p-5">
+          <p className="text-2xl font-bold text-red-600">{amardiido}</p>
+          <p className="text-sm text-ink-500">Amardiido (behavior)</p>
+        </Card>
+        <Card className="p-5">
+          <p className="text-2xl font-bold text-blue-600">{somaliSpeaking}</p>
+          <p className="text-sm text-ink-500">Somali Speaking</p>
+        </Card>
       </div>
       <Card className="mt-6">
         <h3 className="font-display text-lg font-semibold">Quick Actions</h3>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <Button leftIcon={<Plus className="h-4 w-4" />} onClick={() => window.location.href = '/practice/somali-speaking'}>
+          <Button leftIcon={<Plus className="h-4 w-4" />} onClick={() => window.location.href = '/practice-teacher/somali-speaking'}>
             New Somali Speaking Student
           </Button>
-          <Button leftIcon={<Plus className="h-4 w-4" />} onClick={() => window.location.href = '/practice/english-speaking'}>
-            New English Speaking Student
+          <Button leftIcon={<Plus className="h-4 w-4" />} onClick={() => window.location.href = '/practice-teacher/students'}>
+            Practice Students
           </Button>
         </div>
       </Card>
@@ -88,17 +104,29 @@ export function PracticeStudentsPage() {
   const classes = useQuery({ queryKey: ['classes'], queryFn: () => listClasses() })
 
   const form = useForm({
-    defaultValues: { student_name: '', student_id: '', class_id: '', practice_type: 'somali_speaking', language: 'somali', notes: '' },
+    defaultValues: {
+      student_name: '',
+      student_id: '',
+      class_id: '',
+      practice_type: 'somali_speaking',
+      language: 'somali',
+      behavior: 'fican',
+      speaking_somali: 'yes',
+      notes: '',
+    },
   })
 
   const saveMutation = useMutation({
-    mutationFn: async (values: { student_name: string; student_id: string; class_id: string; practice_type: string; language: string; notes: string; status?: string }) => {
+    mutationFn: async (values: { student_name: string; student_id: string; class_id: string; practice_type: string; language: string; behavior: string; speaking_somali: string; notes: string; status?: string }) => {
       const status = values.status || 'draft'
+      const speaking_somali = values.speaking_somali === 'yes' ? true : values.speaking_somali === 'no' ? false : null
       if (editId) {
         return updatePracticeStudent(editId, {
           student_name: values.student_name,
           student_id: values.student_id || null,
           class_id: values.class_id || null,
+          behavior: (values.behavior || null) as 'fican' | 'amardiido' | null,
+          speaking_somali,
           notes: values.notes || null,
           status,
           updated_by: user!.profile.id,
@@ -110,6 +138,8 @@ export function PracticeStudentsPage() {
         class_id: values.class_id || null,
         practice_type: values.practice_type,
         language: values.language,
+        behavior: (values.behavior || null) as 'fican' | 'amardiido' | null,
+        speaking_somali,
         notes: values.notes || null,
         status,
         created_by: user!.profile.id,
@@ -133,6 +163,8 @@ export function PracticeStudentsPage() {
       class_id: s.class_id || '',
       practice_type: s.practice_type,
       language: s.language,
+      behavior: s.behavior ?? '',
+      speaking_somali: s.speaking_somali == null ? '' : s.speaking_somali ? 'yes' : 'no',
       notes: s.notes || '',
     })
     setOpen(true)
@@ -140,7 +172,16 @@ export function PracticeStudentsPage() {
 
   function openCreate(type: string, language: string) {
     setEditId(null)
-    form.reset({ student_name: '', student_id: '', class_id: '', practice_type: type, language, notes: '' })
+    form.reset({
+      student_name: '',
+      student_id: '',
+      class_id: '',
+      practice_type: type,
+      language,
+      behavior: 'fican',
+      speaking_somali: language === 'somali' ? 'yes' : 'no',
+      notes: '',
+    })
     setOpen(true)
   }
 
@@ -204,6 +245,28 @@ export function PracticeStudentsPage() {
             value={form.watch('class_id')}
             onChange={(e) => form.setValue('class_id', e.target.value)}
           />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Select
+              label="Behavior"
+              placeholder="Select behavior"
+              options={[
+                { value: 'fican', label: 'Fican (Good)' },
+                { value: 'amardiido', label: 'Amardiido (Warning)' },
+              ]}
+              value={form.watch('behavior')}
+              onChange={(e) => form.setValue('behavior', e.target.value)}
+            />
+            <Select
+              label="Speaking Somali"
+              placeholder="Select"
+              options={[
+                { value: 'yes', label: 'Yes' },
+                { value: 'no', label: 'No' },
+              ]}
+              value={form.watch('speaking_somali')}
+              onChange={(e) => form.setValue('speaking_somali', e.target.value)}
+            />
+          </div>
           <Input label="Notes / Comments" {...form.register('notes')} />
           {!editId && (
             <div className="flex gap-2">
@@ -263,17 +326,26 @@ function PracticeStudentsPageWithFilter({ type, language, title, submitOnly }: {
   })
 
   const form = useForm({
-    defaultValues: { student_name: '', student_id: '', class_id: '', notes: '' },
+    defaultValues: {
+      student_name: '',
+      student_id: '',
+      class_id: '',
+      behavior: 'fican',
+      speaking_somali: language === 'somali' ? 'yes' : 'no',
+      notes: '',
+    },
   })
 
   const saveMutation = useMutation({
-    mutationFn: async (values: { student_name: string; student_id: string; class_id: string; notes: string; status: string }) => {
+    mutationFn: async (values: { student_name: string; student_id: string; class_id: string; behavior: string; speaking_somali: string; notes: string; status: string }) => {
       return createPracticeStudent({
         student_name: values.student_name,
         student_id: values.student_id || null,
         class_id: values.class_id || null,
         practice_type: type,
         language,
+        behavior: (values.behavior || null) as 'fican' | 'amardiido' | null,
+        speaking_somali: values.speaking_somali === 'yes' ? true : values.speaking_somali === 'no' ? false : null,
         notes: values.notes || null,
         status: values.status,
         created_by: user!.profile.id,
@@ -307,6 +379,28 @@ function PracticeStudentsPageWithFilter({ type, language, title, submitOnly }: {
             value={form.watch('class_id')}
             onChange={(e) => form.setValue('class_id', e.target.value)}
           />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Select
+              label="Behavior"
+              placeholder="Select behavior"
+              options={[
+                { value: 'fican', label: 'Fican (Good)' },
+                { value: 'amardiido', label: 'Amardiido (Warning)' },
+              ]}
+              value={form.watch('behavior')}
+              onChange={(e) => form.setValue('behavior', e.target.value)}
+            />
+            <Select
+              label="Speaking Somali"
+              placeholder="Select"
+              options={[
+                { value: 'yes', label: 'Yes' },
+                { value: 'no', label: 'No' },
+              ]}
+              value={form.watch('speaking_somali')}
+              onChange={(e) => form.setValue('speaking_somali', e.target.value)}
+            />
+          </div>
           <Input label="Notes / Comments" {...form.register('notes')} />
           <div className="flex gap-2">
             {!submitOnly && (
@@ -342,8 +436,12 @@ function PracticeStudentsPageWithFilter({ type, language, title, submitOnly }: {
               <div>
                 <p className="font-medium">{s.student_name}</p>
                 <p className="text-xs text-ink-500">{s.student_id && `${s.student_id} · `}{formatDate(s.created_at)}</p>
+                <p className="text-xs text-ink-500">
+                  Behavior: {s.behavior ? <span className="capitalize">{s.behavior}</span> : '—'} · Speaking Somali: {s.speaking_somali == null ? '—' : s.speaking_somali ? 'Yes' : 'No'}
+                </p>
               </div>
               <div className="flex items-center gap-2">
+                {s.behavior && <StatusBadge status={s.behavior} />}
                 <StatusBadge status={s.status as 'draft' | 'submitted'} />
               </div>
             </Card>
@@ -374,6 +472,9 @@ export function PracticeSubmissionsPage() {
                 <p className="font-medium">{s.student_name}</p>
                 <p className="text-xs text-ink-500">
                   {s.student_id && `${s.student_id} · `}{s.practice_type.replace('_', ' ')} · {s.submitted_at ? formatDateTime(s.submitted_at) : ''}
+                </p>
+                <p className="text-xs text-ink-500">
+                  Behavior: {s.behavior ? <span className="capitalize">{s.behavior}</span> : '—'} · Speaking Somali: {s.speaking_somali == null ? '—' : s.speaking_somali ? 'Yes' : 'No'}
                 </p>
               </div>
               <StatusBadge status="submitted" />

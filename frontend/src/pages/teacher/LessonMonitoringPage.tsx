@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/providers/AuthProvider'
 import { getTeacherClasses } from '@/services/teachers'
 import { listStudentsByClass } from '@/services/students'
-import { listLessonMonitoring, recordBulkLessonMonitoring } from '@/services/lesson-monitoring'
+import { listLessonMonitoring, recordBulkLessonMonitoring, lessonMonitoringLabel, type LessonMonitoringStatusValue } from '@/services/lesson-monitoring'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Card } from '@/components/ui/Card'
@@ -14,10 +14,10 @@ import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { formatDate, getErrorMessage } from '@/lib/utils'
-import type { AttendanceStatus, ClassRecord } from '@/types'
+import type { ClassRecord } from '@/types'
 
-const STATUSES: AttendanceStatus[] = ['present', 'absent']
-const STATUS_LABELS: Record<string, string> = { present: 'Kabaxay', absent: 'Kama bixin' }
+const STATUSES: LessonMonitoringStatusValue[] = ['kabaxay', 'kama_bixin']
+const STATUS_LABELS: Record<string, string> = { kabaxay: 'Kabaxay', kama_bixin: 'Kama bixin' }
 
 export function TeacherLessonMonitoringPage() {
   const { user } = useAuth()
@@ -25,7 +25,7 @@ export function TeacherLessonMonitoringPage() {
   const qc = useQueryClient()
   const [classId, setClassId] = useState('')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
-  const [marks, setMarks] = useState<Record<string, AttendanceStatus>>({})
+  const [marks, setMarks] = useState<Record<string, LessonMonitoringStatusValue>>({})
 
   const classes = useQuery({
     queryKey: ['teacher-classes', teacherId],
@@ -64,7 +64,7 @@ export function TeacherLessonMonitoringPage() {
 
   return (
     <div>
-      <PageHeader title="Lesson Monitoring" description="Mark which students attended this lesson." />
+      <PageHeader title="Lesson Monitoring" description="Mark Kabaxay (attended) or Kama bixin (absent) for this lesson." />
       <Card className="mb-4 grid gap-3 sm:grid-cols-3">
         <Select
           label="Class"
@@ -124,7 +124,7 @@ export function TeacherLessonMonitoringPage() {
                 <p className="text-sm font-medium">{r.student?.profile?.full_name}</p>
                 <p className="text-xs text-ink-500">{formatDate(r.monitoring_date)}</p>
               </div>
-              <StatusBadge status={r.status} label={STATUS_LABELS[r.status]} />
+              <StatusBadge status={r.status} label={lessonMonitoringLabel(r.status)} />
             </Card>
           ))}
         </div>

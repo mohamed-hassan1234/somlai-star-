@@ -7,7 +7,7 @@ export interface CreateTeacherPayload {
   password: string
   fullName: string
   phone?: string
-  role: Extract<AppRole, 'teacher' | 'teacher_cabaas' | 'practice_teacher' | 'supervisor'>
+  role: Extract<AppRole, 'teacher' | 'practice_teacher' | 'supervisor'>
   teacher: {
     specialization?: string
     classIds: string[]

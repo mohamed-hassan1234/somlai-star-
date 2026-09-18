@@ -117,6 +117,9 @@ export function getModel(name: string): Model<any> {
 }
 
 export async function initializeModels(): Promise<void> {
+  // NO_MODEL_INIT skips index/collection creation so the server can run against
+  // an existing database without any structural modification.
+  if (process.env.NO_MODEL_INIT) return
   for (const name of [...Object.keys(modelDefinitions), 'auth_users','auth_sessions','contact_messages']) {
     if (process.env.DEBUG_SETUP) console.log('Initialize model:',name)
     await getModel(name).init()

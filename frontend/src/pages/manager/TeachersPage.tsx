@@ -222,8 +222,8 @@ export function ManagerTeachersPage() {
             label="Role"
             options={[
               { value: 'teacher', label: 'Teacher' },
-              { value: 'teacher_cabaas', label: 'Teacher Cabaas' },
               { value: 'practice_teacher', label: 'Practice Teacher' },
+              { value: 'supervisor', label: 'Supervisor' },
             ]}
             {...form.register('role')}
           />

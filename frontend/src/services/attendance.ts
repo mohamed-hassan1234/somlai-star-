@@ -138,7 +138,7 @@ export async function monthlySummary(
   month?: number,
 ): Promise<
   | Awaited<ReturnType<typeof getMonthlyAttendanceSummary>>
-  | { present: number; absent: number; late: number; leave: number; total: number; percentage?: number }
+  | { present: number; absent: number; late: number; leave: number; permission: number; total: number; percentage?: number }
 > {
   if (typeof studentIdOrInput === 'object') {
     return getMonthlyAttendanceSummary(studentIdOrInput)
@@ -153,9 +153,9 @@ export async function monthlySummary(
     from: start,
     to: end,
   })
-  const totals = { present: 0, absent: 0, late: 0, leave: 0, total: records.length, percentage: 0 }
+  const totals = { present: 0, absent: 0, late: 0, leave: 0, permission: 0, total: records.length, percentage: 0 }
   for (const r of records) {
-    if (r.status in totals) totals[r.status as 'present' | 'absent' | 'late' | 'leave'] += 1
+    if (r.status in totals) totals[r.status as 'present' | 'absent' | 'late' | 'leave' | 'permission'] += 1
   }
   totals.percentage =
     totals.total === 0 ? 0 : Math.round(((totals.present + totals.late) / totals.total) * 1000) / 10

@@ -9,8 +9,10 @@ await connectDb()
 const server=createServer(createApp())
 const wss=attachRealtime(server)
 server.listen(config.port,config.host,() => console.log(`Academy API listening on ${config.host}:${config.port}/api`))
-const job=setInterval(() => void runScheduledBackupIfDue().catch(e => console.error('Backup job failed',e.name)),30000)
-const absence=setInterval(() => {
+// NO_BG_JOBS disables the scheduled backup and auto-absence jobs so a read-only
+// dev session can run without any background database writes.
+const job=process.env.NO_BG_JOBS ? null : setInterval(() => void runScheduledBackupIfDue().catch(e => console.error('Backup job failed',e.name)),30000)
+const absence=process.env.NO_BG_JOBS ? null : setInterval(() => {
   const now=new Date()
   if (now.getHours()===18 && now.getMinutes()===0) void runCheckTeacherAbsence().catch(e => console.error('Absence job failed',e.name))
 },60000)
@@ -18,7 +20,7 @@ let stopping=false
 async function stop() {
   if (stopping) return
   stopping=true
-  clearInterval(job); clearInterval(absence)
+  if (job) clearInterval(job); if (absence) clearInterval(absence)
   for (const socket of wss.clients) socket.terminate()
   wss.close()
   await new Promise<void>((resolve,reject) => server.close(e => e ? reject(e) : resolve()))

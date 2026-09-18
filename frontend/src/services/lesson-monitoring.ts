@@ -2,13 +2,29 @@ import { api } from '@/services/api'
 import type { AttendanceStatus } from '@/types'
 import { serviceError } from './errors'
 
+export type LessonMonitoringStatusValue = AttendanceStatus | 'kabaxay' | 'kama_bixin'
+
+/** Normalized label: Kabaxay / Kama bixin (legacy present/absent map to the same labels). */
+export function lessonMonitoringLabel(status: string): string {
+  switch (status) {
+    case 'kabaxay':
+    case 'present':
+      return 'Kabaxay'
+    case 'kama_bixin':
+    case 'absent':
+      return 'Kama bixin'
+    default:
+      return status.replaceAll('_', ' ')
+  }
+}
+
 export interface LessonMonitoringRecord {
   id: string
   student_id: string
   class_id: string
   teacher_id: string
   monitoring_date: string
-  status: AttendanceStatus
+  status: LessonMonitoringStatusValue
   notes: string | null
   recorded_by: string | null
   created_at: string
@@ -23,7 +39,7 @@ export interface LessonMonitoringRecord {
 
 export interface LessonMonitoringEntry {
   studentId: string
-  status: AttendanceStatus
+  status: LessonMonitoringStatusValue
   notes?: string
 }
 

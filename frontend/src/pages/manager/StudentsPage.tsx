@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Pencil, Plus, KeyRound, UserX, UserCheck, MessagesSquare } from 'lucide-react'
+import { Pencil, Plus, KeyRound, UserX, UserCheck, MessagesSquare, DoorOpen, Undo2 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   createStudentSchema,
@@ -35,6 +35,7 @@ export function ManagerStudentsPage() {
   const [open, setOpen] = useState(false)
   const [edit, setEdit] = useState<Student | null>(null)
   const [disableTarget, setDisableTarget] = useState<Student | null>(null)
+  const [leftTarget, setLeftTarget] = useState<Student | null>(null)
   const [resetTarget, setResetTarget] = useState<Student | null>(null)
   const [newPassword, setNewPassword] = useState('')
 
@@ -105,6 +106,19 @@ export function ManagerStudentsPage() {
     onSuccess: () => {
       toast.success('Account status updated')
       setDisableTarget(null)
+      qc.invalidateQueries({ queryKey: ['students'] })
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  })
+
+  const leftMut = useMutation({
+    mutationFn: async () => {
+      if (!leftTarget?.profile_id) return
+      await setStudentStatus(leftTarget.profile_id, 'left')
+    },
+    onSuccess: () => {
+      toast.success('Student marked as left school')
+      setLeftTarget(null)
       qc.invalidateQueries({ queryKey: ['students'] })
     },
     onError: (e) => toast.error(getErrorMessage(e)),
@@ -234,6 +248,22 @@ export function ManagerStudentsPage() {
                             }`}
                           />
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label={s.profile?.status === 'left' ? 'Reactivate student' : 'Left school'}
+                          title={s.profile?.status === 'left' ? 'Reactivate this student' : 'Mark as left school (history preserved)'}
+                          onClick={() =>
+                            s.profile?.status === 'left'
+                              ? setStudentStatus(s.profile_id, 'active').then(() => {
+                                  toast.success('Student reactivated')
+                                  qc.invalidateQueries({ queryKey: ['students'] })
+                                }).catch((e) => toast.error(getErrorMessage(e)))
+                              : setLeftTarget(s)
+                          }
+                        >
+                          {s.profile?.status === 'left' ? <Undo2 className="h-4 w-4" /> : <DoorOpen className="h-4 w-4" />}
+                        </Button>
                         <Button variant="ghost" size="sm" aria-label="Toggle status" onClick={() => setDisableTarget(s)}>
                           {s.profile?.status === 'disabled' ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
                         </Button>
@@ -281,6 +311,20 @@ export function ManagerStudentsPage() {
                     {(s.profile?.permissions as { school_wide_social?: boolean } | undefined)?.school_wide_social
                       ? 'Revoke school-wide chat'
                       : 'Grant school-wide chat'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() =>
+                      s.profile?.status === 'left'
+                        ? setStudentStatus(s.profile_id, 'active').then(() => {
+                            toast.success('Student reactivated')
+                            qc.invalidateQueries({ queryKey: ['students'] })
+                          }).catch((e) => toast.error(getErrorMessage(e)))
+                        : setLeftTarget(s)
+                    }
+                  >
+                    {s.profile?.status === 'left' ? 'Reactivate' : 'Left school'}
                   </Button>
                   <Button size="sm" variant="danger" onClick={() => setDisableTarget(s)}>
                     {s.profile?.status === 'disabled' ? 'Enable' : 'Disable'}
@@ -348,6 +392,17 @@ export function ManagerStudentsPage() {
         danger={disableTarget?.profile?.status !== 'disabled'}
         loading={statusMut.isPending}
         onConfirm={() => statusMut.mutate()}
+      />
+
+      <ConfirmDialog
+        open={!!leftTarget}
+        onClose={() => setLeftTarget(null)}
+        title="Mark as left school?"
+        message={`${leftTarget?.profile?.full_name ?? 'This student'} (${leftTarget?.student_id ?? ''}) will be marked as left school. Their attendance, results, and monitoring history will be preserved but they will no longer count toward class capacity.`}
+        confirmLabel="Mark as left"
+        danger
+        loading={leftMut.isPending}
+        onConfirm={() => leftMut.mutate()}
       />
 
       <Modal open={!!resetTarget} onClose={() => setResetTarget(null)} title="Reset password" size="sm">

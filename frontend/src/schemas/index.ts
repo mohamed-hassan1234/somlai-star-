@@ -33,7 +33,7 @@ export const createTeacherSchema = z
     fullName: z.string().min(2).max(120),
     phone: z.string().optional(),
     specialization: z.string().optional(),
-    role: z.enum(['teacher', 'teacher_cabaas', 'practice_teacher']),
+    role: z.enum(['teacher', 'practice_teacher', 'supervisor']),
     password: z.string().min(8),
     confirmPassword: z.string(),
     classIds: z.array(z.string().uuid()).min(1, 'Assign at least one class'),
