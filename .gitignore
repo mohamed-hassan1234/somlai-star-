@@ -12,3 +12,4 @@ backups/
 dist/
 scripts/.backup-config.json
 *.log
+.env
