@@ -44,7 +44,8 @@
       "enum": [
         "active",
         "disabled",
-        "pending"
+        "pending",
+        "left"
       ],
       "default": "'active'"
     },
@@ -508,7 +509,8 @@
         "absent",
         "late",
         "leave",
-        "excused"
+        "excused",
+        "permission"
       ]
     },
     "notes": {
@@ -549,7 +551,8 @@
         "absent",
         "late",
         "leave",
-        "excused"
+        "excused",
+        "permission"
       ]
     },
     "notes": {
@@ -1273,7 +1276,8 @@
         "absent",
         "late",
         "leave",
-        "excused"
+        "excused",
+        "permission"
       ]
     },
     "recorded_by": {
@@ -1647,7 +1651,8 @@
         "absent",
         "late",
         "leave",
-        "excused"
+        "excused",
+        "permission"
       ]
     },
     "notes": {
@@ -1778,6 +1783,18 @@
         "somali",
         "english"
       ]
+    },
+    "behavior": {
+      "type": "text",
+      "required": false,
+      "enum": [
+        "fican",
+        "amardiido"
+      ]
+    },
+    "speaking_somali": {
+      "type": "boolean",
+      "required": false
     },
     "notes": {
       "type": "text",
@@ -2183,7 +2200,9 @@
         "absent",
         "late",
         "leave",
-        "excused"
+        "excused",
+        "kabaxay",
+        "kama_bixin"
       ],
       "default": "'present'"
     },

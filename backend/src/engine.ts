@@ -1,7 +1,7 @@
 import { validatePayload, validateResource } from './validators/resources.ts'
 import { TABLE_POLICIES, type PolicyResult } from './policy.ts'
 import type { RequestContext, RowPredicate } from './security.ts'
-import { collection } from './db.ts'
+import { collection, TABLES } from './db.ts'
 import { resolveEmbed } from './relationships.ts'
 import { ApiError } from './errors.ts'
 import { applyInsertDefaults, touchUpdatedAt, DELETE_CASCADES, DELETE_SET_NULL } from './schema.ts'
@@ -337,7 +337,11 @@ async function computeEmbed(
     return map
   }
 
-  const targetPolicy = resolvePolicy(e.target, ctx, 'SELECT') ?? [denyAll as RowPredicate, denyAll as RowPredicate]
+  // `alias:colName(...)` shorthand joins against profiles; the raw target
+  // position holds the source FK column, not a real table name.
+  const targetTable = e.target in TABLES ? e.target : 'profiles'
+
+  const targetPolicy = resolvePolicy(targetTable, ctx, 'SELECT') ?? [denyAll as RowPredicate, denyAll as RowPredicate]
   const selectPredicate = Array.isArray(targetPolicy) ? targetPolicy[0] : targetPolicy
 
   let candidates: Doc[]
@@ -347,14 +351,14 @@ async function computeEmbed(
       for (const r of rows) map.set(r, null)
       return map
     }
-    candidates = await findRaw(e.target, { id: { $in: vals } } as never)
+    candidates = await findRaw(targetTable, { id: { $in: vals } } as never)
   } else {
     const ids = rows.map((r) => r.id).filter((v) => v != null)
     if (ids.length === 0) {
       for (const r of rows) map.set(r, [])
       return map
     }
-    candidates = await findRaw(e.target, { [rel.targetCol!]: { $in: ids } } as never)
+    candidates = await findRaw(targetTable, { [rel.targetCol!]: { $in: ids } } as never)
   }
 
   const allowed: Doc[] = []
@@ -370,7 +374,7 @@ async function computeEmbed(
     for (const r of rows) {
       const v = r[rel.sourceCol!]
       const target = v != null ? (byId.get(String(v)) ?? null) : null
-      map.set(r, target ? (await applySelect([target], nestedFields, e.target, ctx))[0] ?? null : null)
+      map.set(r, target ? (await applySelect([target], nestedFields, targetTable, ctx))[0] ?? null : null)
     }
   } else {
     const byKey = new Map<string, Doc[]>()
@@ -382,7 +386,7 @@ async function computeEmbed(
     }
     for (const r of rows) {
       const list = byKey.get(String(r.id)) ?? []
-      map.set(r, list.length ? await applySelect(list, nestedFields, e.target, ctx) : [])
+      map.set(r, list.length ? await applySelect(list, nestedFields, targetTable, ctx) : [])
     }
   }
   return map

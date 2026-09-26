@@ -215,7 +215,7 @@ export const TABLE_POLICIES: Record<string, PolicyResolver> = {
     if (!ctx.isAuthenticated()) return null
     return async (row) => {
       if (ctx.isManager()) return true
-      if (ctx.isTeacherCabaas() || ctx.roleIn(['attendance_manager'])) return true
+      if (ctx.isTeacherCabaas() || ctx.isSupervisor() || ctx.roleIn(['attendance_manager'])) return true
       const tid = await ownTeacher()
       if (tid && row.teacher_id === tid) return true
       const sid = await ownStudent()

@@ -10,13 +10,18 @@ import {
   YAxis,
 } from 'recharts'
 import { getManagerStats } from '@/services/dashboard'
+import { listClasses } from '@/services/classes'
+import { listStudents } from '@/services/students'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatCard, Card } from '@/components/ui/Card'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { formatDateTime } from '@/lib/utils'
+import type { ClassRecord } from '@/types'
 
 export function ManagerOverviewPage() {
   const { data, isLoading } = useQuery({ queryKey: ['manager-stats'], queryFn: getManagerStats })
+  const classes = useQuery({ queryKey: ['classes'], queryFn: () => listClasses() })
+  const students = useQuery({ queryKey: ['students'], queryFn: () => listStudents() })
 
   const chartData = (() => {
     const map = new Map<string, { date: string; present: number; absent: number }>()
@@ -30,6 +35,11 @@ export function ManagerOverviewPage() {
     return [...map.values()]
   })()
 
+  const classRows = (classes.data ?? []).map((c: ClassRecord) => {
+    const active = (students.data ?? []).filter((s) => s.class_id === c.id && s.profile?.status === 'active').length
+    return { ...c, active, available: Math.max(0, (c.capacity ?? 0) - active) }
+  })
+
   return (
     <div>
       <PageHeader title="Overview" description="Somali Star Academy operations at a glance." />
@@ -38,11 +48,34 @@ export function ManagerOverviewPage() {
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard label="Students" value={data?.students ?? 0} icon={<Users className="h-5 w-5" />} />
+            <StatCard label="Active students" value={data?.activeStudents ?? 0} icon={<Users className="h-5 w-5" />} hint={`${data?.students ?? 0} total registered`} />
             <StatCard label="Teachers" value={data?.teachers ?? 0} icon={<GraduationCap className="h-5 w-5" />} />
             <StatCard label="Active classes" value={data?.classes ?? 0} icon={<School className="h-5 w-5" />} />
             <StatCard label="Unpaid fees" value={(data as any)?.unpaid ?? (data as any)?.unpaidFinance ?? 0} icon={<Wallet className="h-5 w-5" />} hint="Current unpaid records" />
           </div>
+
+          <Card className="mt-6">
+            <h3 className="font-display text-lg font-semibold">Class capacity overview</h3>
+            {classes.isLoading ? (
+              <TableSkeleton rows={3} />
+            ) : !classRows.length ? (
+              <p className="mt-3 text-sm text-ink-500">No classes yet.</p>
+            ) : (
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                {classRows.map((c) => (
+                  <div key={c.id} className="rounded-xl border border-ink-200 p-3 dark:border-ink-700">
+                    <p className="font-display text-sm font-semibold">{c.name}</p>
+                    <p className="text-xs text-ink-500">{c.schedule_slot}</p>
+                    <div className="mt-2 flex gap-4 text-sm">
+                      <span><span className="font-semibold">{c.active}</span> <span className="text-ink-500">students</span></span>
+                      <span><span className="font-semibold">{c.available}</span> <span className="text-ink-500">seats left</span></span>
+                      <span><span className="font-semibold">{c.capacity}</span> <span className="text-ink-500">capacity</span></span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
 
           <div className="mt-6 grid gap-4 lg:grid-cols-2">
             <Card>

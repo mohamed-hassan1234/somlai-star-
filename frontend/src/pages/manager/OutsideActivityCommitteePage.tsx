@@ -195,7 +195,7 @@ export function ManagerOutsideActivityCommitteePage() {
                       password: '********',
                       confirmPassword: '********',
                       classIds: m.classes.map((c) => c.id),
-                      status: m.profile.status,
+                      status: m.profile.status === 'left' ? 'disabled' : m.profile.status,
                     })
                   }}
                 >

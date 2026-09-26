@@ -2,9 +2,10 @@ import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Eye, Search, FileText } from 'lucide-react'
 import { listPracticeStudents, getPracticeStudent, listActivityLogs } from '@/services/practice'
-import { listTeacherAttendance } from '@/services/attendance'
+import { listTeacherAttendance, listAttendance } from '@/services/attendance'
 import { listNotifications } from '@/services/notifications'
 import { listClasses } from '@/services/classes'
+import { listStudentsByClass } from '@/services/students'
 import { useAuth } from '@/providers/AuthProvider'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
@@ -16,7 +17,7 @@ import { Modal } from '@/components/ui/Modal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { TableSkeleton } from '@/components/ui/Skeleton'
 import { formatDate, formatDateTime } from '@/lib/utils'
-import type { PracticeStudent } from '@/types'
+import type { PracticeStudent, AttendanceRecord, AttendanceStatus } from '@/types'
 
 function practiceTypeLabel(type: string) {
   return type.replace('_', ' ')
@@ -34,6 +35,8 @@ function PracticeDetail({ s }: { s: PracticeStudent }) {
       <div><span className="text-xs font-semibold text-ink-500">Class</span><p>{s.class?.name ?? '—'}</p></div>
       <div><span className="text-xs font-semibold text-ink-500">Practice Type</span><p>{practiceTypeLabel(s.practice_type)}</p></div>
       <div><span className="text-xs font-semibold text-ink-500">Language</span><p>{s.language === 'somali' ? 'Somali Speaking' : 'English Speaking'}</p></div>
+      <div><span className="text-xs font-semibold text-ink-500">Behavior</span><p>{s.behavior ? <StatusBadge status={s.behavior} /> : '—'}</p></div>
+      <div><span className="text-xs font-semibold text-ink-500">Speaking Somali</span><p>{s.speaking_somali == null ? '—' : s.speaking_somali ? 'Yes' : 'No'}</p></div>
       <div><span className="text-xs font-semibold text-ink-500">Status</span><p><StatusBadge status={s.status} /></p></div>
       {s.notes && <div><span className="text-xs font-semibold text-ink-500">Notes</span><p className="whitespace-pre-wrap text-sm">{s.notes}</p></div>}
       <div><span className="text-xs font-semibold text-ink-500">Submitted By</span><p>{s.creator?.full_name ?? '—'}</p></div>
@@ -177,7 +180,7 @@ export function SupervisorReportsPage() {
   const [fType, setFType] = useState('')
   const [fFrom, setFFrom] = useState('')
   const [fTo, setFTo] = useState('')
-  const [fStatus, setFStatus] = useState('submitted')
+  const [fStatus, setFStatus] = useState('')
   const [viewId, setViewId] = useState<string | null>(null)
 
   const classes = useQuery({ queryKey: ['classes'], queryFn: () => listClasses() })
@@ -561,6 +564,191 @@ export function SupervisorReportsOverviewPage() {
           <p className="text-sm text-ink-500">English Speaking</p>
         </Card>
       </div>
+
+      <Card className="mt-6">
+        <h3 className="font-display text-lg font-semibold">Practice Submissions Detail</h3>
+        {submissions.isLoading ? (
+          <TableSkeleton rows={5} />
+        ) : !(submissions.data ?? []).length ? (
+          <EmptyState title="No submissions yet" description="Practice submissions will appear here." />
+        ) : (
+          <div className="mt-4 overflow-x-auto rounded-xl border border-ink-200 dark:border-ink-700">
+            <table className="min-w-full divide-y divide-ink-200 dark:divide-ink-700">
+              <thead className="bg-ink-50 dark:bg-ink-900">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Student</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Class</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Type</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Behavior</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Speaking Somali</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Submitted By</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink-200 dark:divide-ink-700">
+                {(submissions.data ?? []).map((s) => (
+                  <tr key={s.id} className="hover:bg-ink-50 dark:hover:bg-ink-900">
+                    <td className="px-4 py-3 text-sm font-medium">{s.student_name}</td>
+                    <td className="px-4 py-3 text-sm text-ink-500">{s.class?.name ?? '—'}</td>
+                    <td className="px-4 py-3 text-sm text-ink-500">{practiceTypeLabel(s.practice_type)}</td>
+                    <td className="px-4 py-3">{s.behavior ? <StatusBadge status={s.behavior} /> : '—'}</td>
+                    <td className="px-4 py-3 text-sm text-ink-500">{s.speaking_somali == null ? '—' : s.speaking_somali ? 'Yes' : 'No'}</td>
+                    <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
+                    <td className="px-4 py-3 text-sm text-ink-500">{s.creator?.full_name ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+    </div>
+  )
+}
+
+export function SupervisorAttendanceReportPage() {
+  const [classId, setClassId] = useState('')
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [historyStudent, setHistoryStudent] = useState('')
+
+  const classes = useQuery({ queryKey: ['classes'], queryFn: () => listClasses() })
+  const classStudents = useQuery({
+    queryKey: ['class-students', classId],
+    queryFn: () => listStudentsByClass(classId),
+    enabled: !!classId,
+  })
+  const dayRecords = useQuery({
+    queryKey: ['attendance-day', classId, date],
+    queryFn: () => listAttendance({ classId: classId || undefined, from: date, to: date }),
+  })
+  const studentHistory = useQuery({
+    queryKey: ['attendance-student-history', historyStudent],
+    queryFn: () => listAttendance({ studentId: historyStudent }),
+    enabled: !!historyStudent,
+  })
+
+  const dayStatusById = useMemo(() => {
+    const map = new Map<string, AttendanceStatus>()
+    for (const r of dayRecords.data ?? []) map.set(r.student_id, r.status)
+    return map
+  }, [dayRecords.data])
+
+  const dayTotals = useMemo(() => {
+    const totals: Record<string, number> = { present: 0, absent: 0, late: 0, leave: 0, excused: 0, permission: 0 }
+    for (const r of dayRecords.data ?? []) {
+      if (r.status in totals) totals[r.status] += 1
+    }
+    return totals
+  }, [dayRecords.data])
+
+  const historyTotals = useMemo(() => {
+    const totals: Record<string, number> = { present: 0, absent: 0, late: 0, leave: 0, excused: 0, permission: 0 }
+    for (const r of studentHistory.data ?? []) {
+      if (r.status in totals) totals[r.status] += 1
+    }
+    return totals
+  }, [studentHistory.data])
+
+  const historyStudentName = useMemo(() => {
+    const record = (studentHistory.data ?? [])[0]
+    return record?.student?.profile?.full_name ?? 'Student'
+  }, [studentHistory.data])
+
+  return (
+    <div>
+      <PageHeader title="Student Attendance Report" description="Daily attendance report with student history." />
+      <Card className="mb-4 grid gap-3 sm:grid-cols-2">
+        <Select
+          label="Class"
+          placeholder="Select a class"
+          options={[{ value: '', label: 'Select a class' }, ...(classes.data ?? []).map((c) => ({ value: c.id, label: c.name }))]}
+          value={classId}
+          onChange={(e) => setClassId(e.target.value)}
+        />
+        <Input label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      </Card>
+
+      {classId && !classStudents.isLoading && (
+        <Card className="mb-4 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {(['present', 'absent', 'late', 'leave', 'excused', 'permission'] as AttendanceStatus[]).map((key) => (
+            <div key={key} className="rounded-xl bg-ink-50 p-3 text-center dark:bg-ink-900">
+              <p className="text-xl font-bold text-ink-900 dark:text-white">{dayTotals[key] ?? 0}</p>
+              <p className="text-xs capitalize text-ink-500">{key}</p>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      <Card>
+        {!classId ? (
+          <EmptyState title="Select a class" description="Pick a class and date to view the attendance report." />
+        ) : classStudents.isLoading ? (
+          <TableSkeleton rows={8} />
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-ink-200 dark:border-ink-700">
+            <table className="min-w-full divide-y divide-ink-200 dark:divide-ink-700">
+              <thead className="bg-ink-50 dark:bg-ink-900">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Student</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Student ID</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Parent Phone</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-ink-500">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink-200 dark:divide-ink-700">
+                {(classStudents.data ?? []).map((s) => {
+                  const status = dayStatusById.get(s.id)
+                  return (
+                    <tr key={s.id} className="hover:bg-ink-50 dark:hover:bg-ink-900">
+                      <td className="px-4 py-3 text-sm font-medium">{s.profile?.full_name ?? s.parent_name}</td>
+                      <td className="px-4 py-3 text-sm text-ink-500">{s.student_id ?? '—'}</td>
+                      <td className="px-4 py-3 text-sm text-ink-500">
+                        {s.parent_phone ?? '—'}
+                      </td>
+                      <td className="px-4 py-3">{status ? <StatusBadge status={status} /> : <span className="text-sm text-ink-400">Not marked</span>}</td>
+                      <td className="px-4 py-3">
+                        <Button size="sm" variant="secondary" onClick={() => setHistoryStudent(s.id)}>
+                          <Eye className="mr-1 h-3.5 w-3.5" /> History
+                        </Button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      <Modal open={!!historyStudent} onClose={() => setHistoryStudent('')} title={`Attendance History${historyStudent ? ` — ${historyStudentName}` : ''}`}>
+        {historyStudent && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-3">
+              {(['present', 'absent', 'late', 'leave', 'excused', 'permission'] as AttendanceStatus[]).map((key) => (
+                <div key={key} className="rounded-xl bg-ink-50 px-4 py-2 text-center dark:bg-ink-900">
+                  <p className="text-lg font-bold text-ink-900 dark:text-white">{historyTotals[key] ?? 0}</p>
+                  <p className="text-xs capitalize text-ink-500">{key}</p>
+                </div>
+              ))}
+            </div>
+            {studentHistory.isLoading ? (
+              <TableSkeleton rows={5} />
+            ) : !(studentHistory.data ?? []).length ? (
+              <p className="text-sm text-ink-500">No attendance records for this student.</p>
+            ) : (
+              <div className="max-h-80 divide-y divide-ink-100 overflow-y-auto dark:divide-ink-800">
+                {(studentHistory.data ?? []).map((r: AttendanceRecord) => (
+                  <div key={r.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                    <span className="text-ink-500">{formatDate(r.attendance_date)}</span>
+                    <StatusBadge status={r.status} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

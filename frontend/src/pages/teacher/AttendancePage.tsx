@@ -16,7 +16,7 @@ import { TableSkeleton } from '@/components/ui/Skeleton'
 import { formatDate, getErrorMessage, monthName } from '@/lib/utils'
 import type { AttendanceStatus, ClassRecord } from '@/types'
 
-const STATUSES: AttendanceStatus[] = ['present', 'absent', 'late', 'leave']
+const STATUSES: AttendanceStatus[] = ['present', 'absent', 'late', 'leave', 'permission']
 
 export function TeacherAttendancePage() {
   const { user } = useAuth()
@@ -78,7 +78,7 @@ export function TeacherAttendancePage() {
 
   return (
     <div>
-      <PageHeader title="Attendance" description="Mark Present, Absent, Late, or Leave for your class." />
+      <PageHeader title="Attendance" description="Mark Present, Absent, Late, Leave, or Permission for your class." />
       <Card className="mb-4 grid gap-3 sm:grid-cols-3">
         <Select label="Class" placeholder="Select class" options={classOptions} value={classId} onChange={(e) => { setClassId(e.target.value); setMarks({}) }} />
         <Input label="Date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -151,8 +151,8 @@ export function TeacherAttendancePage() {
         <Input label="Year" type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} />
       </Card>
       {summary.data && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-          {(['present', 'absent', 'late', 'leave', 'total'] as const).map((k) => (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
+          {(['present', 'absent', 'late', 'leave', 'permission', 'total'] as const).map((k) => (
             <Card key={k} className="text-center">
               <p className="text-xs uppercase text-ink-500">{k}</p>
               <p className="font-display text-2xl font-semibold">{Array.isArray(summary.data) ? 0 : ((summary.data as Record<string, number>)?.[k] ?? 0)}</p>

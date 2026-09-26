@@ -267,6 +267,9 @@ const SupervisorOutsideActivityReviewPage = lazy(() =>
     default: m.SupervisorOutsideActivityReviewPage,
   })),
 )
+const SupervisorAttendanceReportPage = lazy(() =>
+  import('@/pages/supervisor/SupervisorPages').then((m) => ({ default: m.SupervisorAttendanceReportPage })),
+)
 
 const FinanceOverviewPage = lazy(() =>
   import('@/pages/finance/FinancePages').then((m) => ({ default: m.FinanceOverviewPage })),
@@ -408,6 +411,7 @@ export function AppRoutes() {
             <Route path="english-speaking" element={<EnglishSpeakingStudentsPage />} />
             <Route path="submissions" element={<PracticeSubmissionsPage />} />
             <Route path="attendance" element={<PracticeTeacherAttendancePage />} />
+            <Route path="chat" element={<ChatPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="profile" element={<TeacherProfilePage />} />
           </Route>
@@ -421,6 +425,7 @@ export function AppRoutes() {
             <Route path="english-speaking" element={<SupervisorEnglishSpeakingPage />} />
             <Route path="activity" element={<SupervisorActivityPage />} />
             <Route path="teacher-attendance" element={<SupervisorTeacherAttPage />} />
+            <Route path="attendance-report" element={<SupervisorAttendanceReportPage />} />
             <Route path="lesson-monitoring" element={<LessonMonitoringReviewPage />} />
             <Route path="outside-activity-attendance" element={<SupervisorOutsideActivityReviewPage />} />
             <Route path="chat" element={<ChatPage />} />

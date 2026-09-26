@@ -65,6 +65,7 @@ export interface MonthlyAttendanceSummary {
   absent: number
   late: number
   leave: number
+  permission: number
   total: number
   percentPresent: number
 }
@@ -94,20 +95,21 @@ export async function getMonthlyAttendanceSummary(input: {
 
   if (error) throw serviceError(error, 'Failed to load monthly attendance')
 
-  const byStudent = new Map<string, { present: number; absent: number; late: number; leave: number }>()
+  const byStudent = new Map<string, { present: number; absent: number; late: number; leave: number; permission: number }>()
 
   for (const r of records ?? []) {
-    const cur = byStudent.get(r.student_id) ?? { present: 0, absent: 0, late: 0, leave: 0 }
+    const cur = byStudent.get(r.student_id) ?? { present: 0, absent: 0, late: 0, leave: 0, permission: 0 }
     if (r.status === 'present') cur.present++
     else if (r.status === 'absent') cur.absent++
     else if (r.status === 'late') cur.late++
     else if (r.status === 'leave') cur.leave++
+    else if (r.status === 'permission') cur.permission++
     byStudent.set(r.student_id, cur)
   }
 
   return (students ?? []).map((s) => {
-    const counts = byStudent.get(s.id) ?? { present: 0, absent: 0, late: 0, leave: 0 }
-    const total = counts.present + counts.absent + counts.late + counts.leave
+    const counts = byStudent.get(s.id) ?? { present: 0, absent: 0, late: 0, leave: 0, permission: 0 }
+    const total = counts.present + counts.absent + counts.late + counts.leave + counts.permission
     const attended = counts.present + counts.late
     const profile = s.profile as { full_name?: string } | { full_name?: string }[] | null
     const name = Array.isArray(profile) ? profile[0]?.full_name : profile?.full_name

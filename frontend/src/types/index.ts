@@ -11,8 +11,9 @@ export type AppRole =
   | 'school_manager'
   | 'parent'
 
-export type AccountStatus = 'active' | 'disabled' | 'pending'
-export type AttendanceStatus = 'present' | 'absent' | 'late' | 'leave' | 'excused'
+export type AccountStatus = 'active' | 'disabled' | 'pending' | 'left'
+export type AttendanceStatus = 'present' | 'absent' | 'late' | 'leave' | 'excused' | 'permission'
+export type LessonMonitoringStatus = 'kabaxay' | 'kama_bixin'
 export type OutsideActivityStatus = 'present' | 'absent' | 'excused'
 export type PaymentStatus = 'paid' | 'unpaid' | 'scholarship_nb'
 export type LeaveStatus = 'pending' | 'approved' | 'rejected'
@@ -313,6 +314,8 @@ export interface PracticeStudent {
   class_id: string | null
   practice_type: 'somali_speaking' | 'english_speaking'
   language: 'somali' | 'english'
+  behavior: 'fican' | 'amardiido' | null
+  speaking_somali: boolean | null
   notes: string | null
   status: 'draft' | 'submitted'
   created_by: string

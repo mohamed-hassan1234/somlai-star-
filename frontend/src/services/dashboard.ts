@@ -222,6 +222,8 @@ export async function getManagerStats() {
     .order('attendance_date')
   return {
     students: stats.students,
+    activeStudents: stats.activeStudents,
+    disabledAccounts: stats.disabledAccounts,
     teachers: stats.teachers,
     classes: stats.classes,
     unpaid: stats.unpaidFinance,

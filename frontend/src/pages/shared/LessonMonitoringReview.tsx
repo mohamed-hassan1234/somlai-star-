@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listClasses } from '@/services/classes'
-import { listLessonMonitoring } from '@/services/lesson-monitoring'
+import { lessonMonitoringLabel, listLessonMonitoring } from '@/services/lesson-monitoring'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Card } from '@/components/ui/Card'
@@ -46,7 +46,7 @@ export function LessonMonitoringReviewPage() {
                   {formatDate(r.monitoring_date)} · {r.class?.name ?? r.student?.class?.name ?? 'Class'}
                 </p>
               </div>
-              <StatusBadge status={r.status} />
+              <StatusBadge status={r.status} label={lessonMonitoringLabel(r.status)} />
             </Card>
           ))}
         </div>

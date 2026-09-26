@@ -41,6 +41,8 @@ export async function createPracticeStudent(input: {
   class_id?: string | null
   practice_type: string
   language: string
+  behavior?: 'fican' | 'amardiido' | null
+  speaking_somali?: boolean | null
   notes?: string | null
   status?: string
   created_by: string
@@ -54,6 +56,8 @@ export async function createPracticeStudent(input: {
       class_id: input.class_id ?? null,
       practice_type: input.practice_type,
       language: input.language,
+      behavior: input.behavior ?? null,
+      speaking_somali: input.speaking_somali ?? null,
       notes: input.notes ?? null,
       status: input.status ?? 'draft',
       created_by: input.created_by,
@@ -73,6 +77,8 @@ export async function updatePracticeStudent(
     student_name?: string
     student_id?: string | null
     class_id?: string | null
+    behavior?: 'fican' | 'amardiido' | null
+    speaking_somali?: boolean | null
     notes?: string | null
     status?: string
     updated_by: string
@@ -85,6 +91,8 @@ export async function updatePracticeStudent(
   if (input.student_name !== undefined) patch.student_name = input.student_name
   if (input.student_id !== undefined) patch.student_id = input.student_id
   if (input.class_id !== undefined) patch.class_id = input.class_id
+  if (input.behavior !== undefined) patch.behavior = input.behavior
+  if (input.speaking_somali !== undefined) patch.speaking_somali = input.speaking_somali
   if (input.notes !== undefined) patch.notes = input.notes
   if (input.status !== undefined) {
     patch.status = input.status

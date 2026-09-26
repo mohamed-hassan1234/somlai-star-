@@ -94,7 +94,7 @@ async function activityLog(
 // ---------------------------------------------------------------------------
 
 const MEDIA_TYPES = new Set(['text', 'voice', 'image', 'video'])
-const NORMAL_STATUSES = new Set(['present', 'absent', 'late', 'leave', 'excused'])
+const NORMAL_STATUSES = new Set(['present', 'absent', 'late', 'leave', 'excused', 'permission'])
 
 export async function validateInsert(
   table: string,
@@ -306,9 +306,13 @@ export async function afterInsert(table: string, row: Doc, ctx: RequestContext):
       await lessonMonitoringNotify(row)
       break
     }
+    case 'attendance': {
+      await attendanceNotify(row)
+      break
+    }
     case 'practice_students': {
       await practiceActivity(ctx, 'insert', row)
-      if (row.status === 'submitted') await practiceSubmitNotify(row)
+      await practiceNotify(row, row.status === 'submitted')
       break
     }
     case 'result_submissions': {
@@ -386,7 +390,7 @@ export async function afterUpdate(
     }
     case 'practice_students': {
       await practiceActivity(ctx, 'update', { ...oldRow, ...newRow })
-      if (newRow.status === 'submitted' && oldRow.status !== 'submitted') await practiceSubmitNotify(newRow)
+      if (newRow.status === 'submitted' && oldRow.status !== 'submitted') await practiceNotify(newRow, true)
       break
     }
     case 'finance_records': {
@@ -395,6 +399,10 @@ export async function afterUpdate(
     }
     case 'lesson_monitoring': {
       await lessonMonitoringNotify(newRow)
+      break
+    }
+    case 'attendance': {
+      await attendanceNotify(newRow)
       break
     }
     case 'chat_messages': {
@@ -519,9 +527,12 @@ async function lessonMonitoringNotify(row: Doc): Promise<void> {
   const map: Record<string, { en: string; so: string }> = {
     present: { en: ' wuxuu Kabaxay casharkii.', so: ' wuxuu Kabaxay casharkii.' },
     absent: { en: ' kama bixin casharkii.', so: ' kama bixin casharkii.' },
+    kabaxay: { en: ' wuxuu Kabaxay casharkii.', so: ' wuxuu Kabaxay casharkii.' },
+    kama_bixin: { en: ' kama bixin casharkii.', so: ' kama bixin casharkii.' },
     late: { en: ' arrived late to the lesson.', so: ' wuxuu ku daahay casharkii.' },
     leave: { en: ' was on leave for the lesson.', so: ' fasax buu u ahaa casharkii.' },
     excused: { en: ' was excused from the lesson.', so: ' cudurdaar buu lahaa casharkii.' },
+    permission: { en: ' was on permission for the lesson.', so: ' ruqsad buu u ahaa casharkii.' },
   }
   const m = map[status] ?? { en: ' has a lesson monitoring update.', so: ' waa la cusboonaysiiyay.' }
   const bodyEn = `${label}${m.en}`
@@ -537,14 +548,46 @@ async function lessonMonitoringNotify(row: Doc): Promise<void> {
   }
 }
 
-async function practiceSubmitNotify(row: Doc): Promise<void> {
+async function attendanceNotify(row: Doc): Promise<void> {
+  const attendanceDate = String(row.attendance_date ?? '')
+  const classId = String(row.class_id ?? '')
+  const teacherId = String(row.teacher_id ?? '')
+  const marker = `${classId}|${attendanceDate}`
+  const teacher = await findOne('teachers', { id: teacherId })
+  const teacherProfile = teacher?.profile_id ? await findOne('profiles', { id: String(teacher.profile_id) }) : null
+  const teacherName = teacherProfile?.full_name ? String(teacherProfile.full_name) : 'A teacher'
+  const cls = await findOne('classes', { id: classId })
+  const className = cls?.name ? String(cls.name) : 'the class'
+  const status = String(row.status ?? '')
+  const body = `${teacherName} marked ${className} attendance as ${status} for ${attendanceDate}.`
+  const targets = await find('profiles', { role: 'supervisor', status: 'active', deleted_at: null })
+  for (const p of targets) {
+    // One notification per class+date save, not one per student row.
+    const already = await findOne('notifications', {
+      profile_id: String(p.id),
+      type: 'attendance',
+      'metadata.marker': marker,
+    })
+    if (already) continue
+    await notifyUser(
+      String(p.id),
+      'Attendance Saved',
+      body,
+      'attendance',
+      '/supervisor/attendance-report',
+      { marker, class_id: classId, attendance_date: attendanceDate },
+    )
+  }
+}
+
+async function practiceNotify(row: Doc, submitted: boolean): Promise<void> {
   const creator = await findOne('profiles', { id: String(row.created_by) })
   const name = creator?.full_name ? String(creator.full_name) : 'A practice teacher'
   const languageLabel = row.language === 'somali' ? 'Somali Speaking' : 'English Speaking'
-  const body = `${name} submitted a ${languageLabel} report for ${String(row.student_name ?? '')}.`
+  const body = `${name} ${submitted ? 'submitted' : 'saved'} a ${languageLabel} ${submitted ? 'report' : 'record'} for ${String(row.student_name ?? '')}.`
   await notifyRoles(
     ['supervisor'],
-    'New Practice Submission',
+    submitted ? 'New Practice Submission' : 'New Practice Record',
     body,
     'practice',
     '/supervisor/reports',
