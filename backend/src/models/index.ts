@@ -14,6 +14,9 @@ export const uniqueKeys: Record<string, string[][]> = {
   attendance: [['student_id','class_id','attendance_date']], practice_attendance: [['student_id','practice_date']],
   teacher_attendance: [['teacher_id','attendance_date']], lesson_monitoring: [['student_id','class_id','monitoring_date']],
   outside_activity_attendance: [['activity_id','student_id']], finance_records: [['student_id','month','year']],
+  // expenses / salaries / other_income are per-month transaction logs: many entries may
+  // legitimately share the same month+year (e.g. one salary row per employee), so they must
+  // not be unique on month+year. Enrollment data is unaffected (collections start empty).
   chat_post_reactions: [['post_id','user_id']], follows: [['follower_id','following_id']],
   quiz_attempts: [['quiz_id','student_id']], quiz_answers: [['attempt_id','question_id']],
   teacher_classes: [['teacher_id','class_id']], teacher_subjects: [['teacher_id','subject_id','class_id']],
@@ -96,7 +99,7 @@ export function getModel(name: string): Model<any> {
     fields.role.enum = [...new Set([...ROLES, 'parent'])]
     fields.email = { type: String, lowercase: true, trim: true }
   }
-  if (name === 'students') fields.student_id.match = /^SOMSTAR([1-5][0-9]{2}|600)$/
+  if (name === 'students') fields.student_id.match = /^SOMSTAR([1-6][0-9]{2}|700)$/
   if (name === 'password_reset_requests') { fields.login_id.maxlength=32; fields.requester_note.maxlength=500 }
   if (name === 'quiz_attempts') fields.submitting = { type: Boolean, default: false }
   for (const keys of uniqueKeys[name] ?? []) if (keys.length===1 && fields[keys[0]!]) delete fields[keys[0]!].index
@@ -111,6 +114,8 @@ export function getModel(name: string): Model<any> {
   if (name === 'notifications') schema.index({ profile_id: 1, is_read: 1, created_at: -1 })
   if (name === 'chat_messages') schema.index({ conversation_id: 1, created_at: -1 })
   if (name === 'finance_records') schema.index({ year: 1, month: 1 })
+  if (name === 'expenses') schema.index({ month: 1, year: 1 })
+  if (name === 'salaries') schema.index({ month: 1, year: 1 })
   const model = mongoose.models[name] ?? mongoose.model(name, schema)
   models.set(name, model)
   return model

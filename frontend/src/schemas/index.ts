@@ -12,8 +12,13 @@ export const loginSchema = z.object({
 
 export const createStudentSchema = z
   .object({
-    studentId: z.string().regex(/^SOMSTAR([1-5][0-9]{2}|600)$/, 'Invalid Student ID format'),
+    studentId: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .regex(/^SOMSTAR([1-6][0-9]{2}|700)$/, 'Student ID must be between SOMSTAR100 and SOMSTAR700'),
     fullName: z.string().min(2, 'Full name is required').max(120),
+    imageUrl: z.string().optional(),
     parentName: z.string().min(2, 'Parent/Guardian name is required').max(120),
     parentPhone: z.string().min(7, 'Valid phone required').max(20),
     classId: z.string().uuid('Select a class'),

@@ -1,4 +1,5 @@
 import { createAccount } from '../services/accounts.ts'
+import { deleteStudentAccount, recoverStudentPassword } from '../services/students.ts'
 import { importRows } from '../services/imports.ts'
 import type { Request, Response } from 'express'
 import { uploadedParts, isMultipart } from '../middleware/uploads.ts'
@@ -387,6 +388,26 @@ export async function handleResetPassword(request: Request, reply: Response): Pr
       created_at: nowIso(),
     } as never)
     return reply.send({ success: true, emailHint: loginIdToEmail(target.login_id) })
+  } catch (err) {
+    return sendError(reply, err)
+  }
+}
+
+export async function handleDeleteStudent(request: Request, reply: Response): Promise<unknown> {
+  try {
+    const ctx = await RequestContext.fromBearer(bearer(request))
+    const body = (request.body ?? {}) as Doc
+    return reply.send(await deleteStudentAccount({ id: body.id, studentId: body.studentId ?? body.loginId }, ctx))
+  } catch (err) {
+    return sendError(reply, err)
+  }
+}
+
+export async function handleStudentPasswordRecovery(request: Request, reply: Response): Promise<unknown> {
+  try {
+    const ctx = await RequestContext.fromBearer(bearer(request))
+    const body = (request.body ?? {}) as Doc
+    return reply.send(await recoverStudentPassword({ loginId: body.loginId, newPassword: body.newPassword }, ctx))
   } catch (err) {
     return sendError(reply, err)
   }

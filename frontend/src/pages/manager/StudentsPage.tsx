@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Pencil, Plus, KeyRound, UserX, UserCheck, MessagesSquare, DoorOpen, Undo2 } from 'lucide-react'
+import { Pencil, Plus, KeyRound, UserX, UserCheck, MessagesSquare, Trash2, Eye, ImagePlus, X, Copy, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   createStudentSchema,
@@ -10,16 +10,22 @@ import {
 } from '@/schemas'
 import {
   createStudent,
+  deleteStudent,
   listStudents,
   nextStudentId,
+  recoverStudentPassword,
   resetStudentPassword,
   setStudentStatus,
   updateStudent,
+  uploadStudentImage,
+  STUDENT_IMAGE_ACCEPT,
+  type PasswordRecoveryResult,
 } from '@/services/students'
 import { listAcademicYears, listClasses } from '@/services/classes'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
+import { Avatar } from '@/pages/shared/chat/Avatar'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -35,9 +41,17 @@ export function ManagerStudentsPage() {
   const [open, setOpen] = useState(false)
   const [edit, setEdit] = useState<Student | null>(null)
   const [disableTarget, setDisableTarget] = useState<Student | null>(null)
-  const [leftTarget, setLeftTarget] = useState<Student | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Student | null>(null)
   const [resetTarget, setResetTarget] = useState<Student | null>(null)
+  const [recoverTarget, setRecoverTarget] = useState<Student | null>(null)
+  const [recovered, setRecovered] = useState<PasswordRecoveryResult | null>(null)
+  const [copied, setCopied] = useState(false)
   const [newPassword, setNewPassword] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageError, setImageError] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const previewRef = useRef<string | null>(null)
 
   const students = useQuery({ queryKey: ['students'], queryFn: () => listStudents() })
   const classes = useQuery({ queryKey: ['classes'], queryFn: () => listClasses() })
@@ -48,6 +62,7 @@ export function ManagerStudentsPage() {
     defaultValues: {
       studentId: '',
       fullName: '',
+      imageUrl: '',
       parentName: '',
       parentPhone: '',
       classId: '',
@@ -58,6 +73,21 @@ export function ManagerStudentsPage() {
     },
   })
 
+  const clearSelectedImage = () => {
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current)
+    previewRef.current = null
+    setImageFile(null)
+    setImagePreview(null)
+    setImageError(null)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  const closeForm = () => {
+    setOpen(false)
+    setEdit(null)
+    clearSelectedImage()
+  }
+
   useEffect(() => {
     if (!open) return
     nextStudentId()
@@ -67,11 +97,42 @@ export function ManagerStudentsPage() {
     if (activeYear) form.setValue('academicYearId', activeYear.id)
   }, [open, years.data, form])
 
+  const pickImage = (file: File | null) => {
+    setImageError(null)
+    if (!file) return
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      setImageError('Student images must be JPG, JPEG, PNG or WebP')
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setImageError('Student images must be 5MB or smaller')
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current)
+    const preview = URL.createObjectURL(file)
+    previewRef.current = preview
+    setImageFile(file)
+    setImagePreview(preview)
+  }
+
+  useEffect(() => () => {
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current)
+  }, [])
+
   const createMut = useMutation({
-    mutationFn: createStudent,
+    mutationFn: async (payload: Parameters<typeof createStudent>[0]) => {
+      // Upload the photo first so a storage failure never leaves a half-created login.
+      const avatarUrl = imageFile ? await uploadStudentImage(imageFile) : null
+      return createStudent({
+        ...payload,
+        student: { ...payload.student, avatarUrl },
+      })
+    },
     onSuccess: () => {
       toast.success('Student created')
-      setOpen(false)
+      closeForm()
       form.reset()
       qc.invalidateQueries({ queryKey: ['students'] })
     },
@@ -111,14 +172,14 @@ export function ManagerStudentsPage() {
     onError: (e) => toast.error(getErrorMessage(e)),
   })
 
-  const leftMut = useMutation({
+  const deleteMut = useMutation({
     mutationFn: async () => {
-      if (!leftTarget?.profile_id) return
-      await setStudentStatus(leftTarget.profile_id, 'left')
+      if (!deleteTarget) return
+      return deleteStudent(deleteTarget.id)
     },
-    onSuccess: () => {
-      toast.success('Student marked as left school')
-      setLeftTarget(null)
+    onSuccess: (result) => {
+      toast.success(result?.message ?? 'Student deleted')
+      setDeleteTarget(null)
       qc.invalidateQueries({ queryKey: ['students'] })
     },
     onError: (e) => toast.error(getErrorMessage(e)),
@@ -137,6 +198,44 @@ export function ManagerStudentsPage() {
     onError: (e) => toast.error(getErrorMessage(e)),
   })
 
+  const recoverMut = useMutation({
+    mutationFn: async () => {
+      if (!recoverTarget) return
+      return recoverStudentPassword(recoverTarget.student_id)
+    },
+    onSuccess: (result) => {
+      if (result) setRecovered(result)
+      setCopied(false)
+      qc.invalidateQueries({ queryKey: ['students'] })
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  })
+
+  const openRecovery = (student: Student) => {
+    setRecovered(null)
+    setCopied(false)
+    setRecoverTarget(student)
+  }
+
+  const openEdit = (s: Student) => {
+    clearSelectedImage()
+    setEdit(s)
+    form.reset({
+      studentId: s.student_id,
+      fullName: s.profile?.full_name ?? '',
+      imageUrl: '',
+      parentName: s.parent_name,
+      parentPhone: s.parent_phone,
+      classId: s.class_id ?? '',
+      academicYearId: s.academic_year_id ?? '',
+      password: '********',
+      confirmPassword: '********',
+      status: (s.profile?.status as CreateStudentInput['status']) ?? 'active',
+    })
+  }
+
+  // Class options come straight from the existing class records, so the school never
+  // accumulates duplicate class names with different IDs.
   const classOptions = (classes.data ?? []).map((c) => ({ value: c.id, label: c.name }))
   const yearOptions = (years.data ?? []).map((y) => ({ value: y.id, label: y.name }))
 
@@ -163,6 +262,7 @@ export function ManagerStudentsPage() {
               <thead>
                 <tr className="border-b border-ink-200 text-xs uppercase tracking-wide text-ink-500 dark:border-ink-700">
                   <th className="pb-3 pr-3 font-semibold">Student ID</th>
+                  <th className="pb-3 pr-3 font-semibold">Image</th>
                   <th className="pb-3 pr-3 font-semibold">Full Name</th>
                   <th className="pb-3 pr-3 font-semibold">Parent Name</th>
                   <th className="pb-3 pr-3 font-semibold">Parent Phone</th>
@@ -177,6 +277,9 @@ export function ManagerStudentsPage() {
                 {students.data.map((s) => (
                   <tr key={s.id} className="border-b border-ink-100 dark:border-ink-800">
                     <td className="py-3 pr-3 font-mono text-xs font-semibold">{s.student_id}</td>
+                    <td className="py-3 pr-3">
+                      <Avatar profile={s.profile} size="sm" />
+                    </td>
                     <td className="py-3 pr-3 font-medium">{s.profile?.full_name}</td>
                     <td className="py-3 pr-3">{s.parent_name}</td>
                     <td className="py-3 pr-3">{s.parent_phone}</td>
@@ -194,25 +297,21 @@ export function ManagerStudentsPage() {
                           variant="ghost"
                           size="sm"
                           aria-label="Edit"
-                          onClick={() => {
-                            setEdit(s)
-                            form.reset({
-                              studentId: s.student_id,
-                              fullName: s.profile?.full_name ?? '',
-                              parentName: s.parent_name,
-                              parentPhone: s.parent_phone,
-                              classId: s.class_id ?? '',
-                              academicYearId: s.academic_year_id ?? '',
-                              password: '********',
-                              confirmPassword: '********',
-                              status: (s.profile?.status as CreateStudentInput['status']) ?? 'active',
-                            })
-                          }}
+                          onClick={() => openEdit(s)}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" aria-label="Reset password" onClick={() => setResetTarget(s)}>
                           <KeyRound className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          aria-label="Password recovery"
+                          title="Password recovery"
+                          onClick={() => openRecovery(s)}
+                        >
+                          <Eye className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -248,24 +347,17 @@ export function ManagerStudentsPage() {
                             }`}
                           />
                         </Button>
+                        <Button variant="ghost" size="sm" aria-label="Toggle status" onClick={() => setDisableTarget(s)}>
+                          {s.profile?.status === 'disabled' ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          aria-label={s.profile?.status === 'left' ? 'Reactivate student' : 'Left school'}
-                          title={s.profile?.status === 'left' ? 'Reactivate this student' : 'Mark as left school (history preserved)'}
-                          onClick={() =>
-                            s.profile?.status === 'left'
-                              ? setStudentStatus(s.profile_id, 'active').then(() => {
-                                  toast.success('Student reactivated')
-                                  qc.invalidateQueries({ queryKey: ['students'] })
-                                }).catch((e) => toast.error(getErrorMessage(e)))
-                              : setLeftTarget(s)
-                          }
+                          aria-label="Delete"
+                          title="Delete student"
+                          onClick={() => setDeleteTarget(s)}
                         >
-                          {s.profile?.status === 'left' ? <Undo2 className="h-4 w-4" /> : <DoorOpen className="h-4 w-4" />}
-                        </Button>
-                        <Button variant="ghost" size="sm" aria-label="Toggle status" onClick={() => setDisableTarget(s)}>
-                          {s.profile?.status === 'disabled' ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
+                          <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
                         </Button>
                       </div>
                     </td>
@@ -279,20 +371,24 @@ export function ManagerStudentsPage() {
             {students.data.map((s) => (
               <Card key={s.id}>
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="font-mono text-xs font-semibold text-brand-700">{s.student_id}</p>
-                    <p className="font-display text-lg font-semibold">{s.profile?.full_name}</p>
-                    <p className="mt-1 text-sm text-ink-500">{s.class?.name ?? 'No class'}</p>
-                    <p className="text-sm text-ink-600">{s.parent_name} · {s.parent_phone}</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <StatusBadge status={s.password_set ? 'set' : 'unset'} label={s.password_set ? 'Password set' : 'Password unset'} />
-                      <StatusBadge status={s.profile?.status ?? 'pending'} />
+                  <div className="flex items-start gap-3">
+                    <Avatar profile={s.profile} size="md" />
+                    <div>
+                      <p className="font-mono text-xs font-semibold text-brand-700">{s.student_id}</p>
+                      <p className="font-display text-lg font-semibold">{s.profile?.full_name}</p>
+                      <p className="mt-1 text-sm text-ink-500">{s.class?.name ?? 'No class'}</p>
+                      <p className="text-sm text-ink-600">{s.parent_name} · {s.parent_phone}</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <StatusBadge status={s.password_set ? 'set' : 'unset'} label={s.password_set ? 'Password set' : 'Password unset'} />
+                        <StatusBadge status={s.profile?.status ?? 'pending'} />
+                      </div>
                     </div>
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setEdit(s)}>Edit</Button>
+                  <Button size="sm" variant="secondary" onClick={() => openEdit(s)}>Edit</Button>
                   <Button size="sm" variant="secondary" onClick={() => setResetTarget(s)}>Reset PW</Button>
+                  <Button size="sm" variant="secondary" onClick={() => openRecovery(s)}>Recovery</Button>
                   <Button
                     size="sm"
                     variant="secondary"
@@ -312,22 +408,11 @@ export function ManagerStudentsPage() {
                       ? 'Revoke school-wide chat'
                       : 'Grant school-wide chat'}
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() =>
-                      s.profile?.status === 'left'
-                        ? setStudentStatus(s.profile_id, 'active').then(() => {
-                            toast.success('Student reactivated')
-                            qc.invalidateQueries({ queryKey: ['students'] })
-                          }).catch((e) => toast.error(getErrorMessage(e)))
-                        : setLeftTarget(s)
-                    }
-                  >
-                    {s.profile?.status === 'left' ? 'Reactivate' : 'Left school'}
-                  </Button>
                   <Button size="sm" variant="danger" onClick={() => setDisableTarget(s)}>
                     {s.profile?.status === 'disabled' ? 'Enable' : 'Disable'}
+                  </Button>
+                  <Button size="sm" variant="danger" onClick={() => setDeleteTarget(s)}>
+                    Delete
                   </Button>
                 </div>
               </Card>
@@ -336,7 +421,7 @@ export function ManagerStudentsPage() {
         </>
       )}
 
-      <Modal open={open || !!edit} onClose={() => { setOpen(false); setEdit(null) }} title={edit ? 'Edit Student' : 'Create Student'} size="lg">
+      <Modal open={open || !!edit} onClose={closeForm} title={edit ? 'Edit Student' : 'Create Student'} size="lg">
         <form
           className="grid gap-3 sm:grid-cols-2"
           onSubmit={form.handleSubmit((values) => {
@@ -357,6 +442,51 @@ export function ManagerStudentsPage() {
         >
           <Input label="Student ID" {...form.register('studentId')} error={form.formState.errors.studentId?.message} disabled={!!edit} />
           <Input label="Full Name" {...form.register('fullName')} error={form.formState.errors.fullName?.message} />
+
+          {!edit && (
+            <div className="sm:col-span-2">
+              <span className="mb-1 block text-sm font-medium text-ink-700 dark:text-ink-200">Student Image</span>
+              <div className="flex items-center gap-3">
+                {imagePreview ? (
+                  <img
+                    src={imagePreview}
+                    alt="Student preview"
+                    className="h-16 w-16 shrink-0 rounded-full object-cover ring-1 ring-ink-200 dark:ring-ink-700"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-ink-100 text-ink-400 dark:bg-ink-800">
+                    <ImagePlus className="h-6 w-6" />
+                  </div>
+                )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept={STUDENT_IMAGE_ACCEPT}
+                    className="hidden"
+                    onChange={(e) => pickImage(e.target.files?.[0] ?? null)}
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => fileRef.current?.click()}
+                    loading={createMut.isPending && !!imageFile}
+                  >
+                    {imagePreview ? 'Change image' : 'Choose image'}
+                  </Button>
+                  {imagePreview && (
+                    <Button type="button" variant="ghost" onClick={clearSelectedImage}>
+                      <X className="h-4 w-4" />
+                      Remove
+                    </Button>
+                  )}
+                  <span className="text-xs text-ink-500">JPG, JPEG, PNG or WebP, up to 5MB</span>
+                </div>
+              </div>
+              {imageError && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{imageError}</p>}
+            </div>
+          )}
+
           <Input label="Parent / Guardian Name" {...form.register('parentName')} error={form.formState.errors.parentName?.message} />
           <Input label="Parent Phone" {...form.register('parentPhone')} error={form.formState.errors.parentPhone?.message} />
           <Select label="Class" options={classOptions} placeholder="Select class" {...form.register('classId')} error={form.formState.errors.classId?.message} />
@@ -377,7 +507,7 @@ export function ManagerStudentsPage() {
             </>
           )}
           <div className="sm:col-span-2 mt-2 flex justify-end gap-2">
-            <Button type="button" variant="secondary" onClick={() => { setOpen(false); setEdit(null) }}>Cancel</Button>
+            <Button type="button" variant="secondary" onClick={closeForm}>Cancel</Button>
             <Button type="submit" loading={createMut.isPending || updateMut.isPending}>{edit ? 'Save' : 'Create'}</Button>
           </div>
         </form>
@@ -395,17 +525,22 @@ export function ManagerStudentsPage() {
       />
 
       <ConfirmDialog
-        open={!!leftTarget}
-        onClose={() => setLeftTarget(null)}
-        title="Mark as left school?"
-        message={`${leftTarget?.profile?.full_name ?? 'This student'} (${leftTarget?.student_id ?? ''}) will be marked as left school. Their attendance, results, and monitoring history will be preserved but they will no longer count toward class capacity.`}
-        confirmLabel="Mark as left"
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete student?"
+        message={`${deleteTarget?.profile?.full_name ?? 'This student'} (${deleteTarget?.student_id ?? ''}) will be permanently deleted. Their SOMSTAR ID will be released for reuse, attendance, results, finance and monitoring history will be preserved, and the student login will be removed.`}
+        confirmLabel="Delete student"
         danger
-        loading={leftMut.isPending}
-        onConfirm={() => leftMut.mutate()}
+        loading={deleteMut.isPending}
+        onConfirm={() => deleteMut.mutate()}
       />
 
-      <Modal open={!!resetTarget} onClose={() => setResetTarget(null)} title="Reset password" size="sm">
+      <Modal
+        open={!!resetTarget}
+        onClose={() => setResetTarget(null)}
+        title="Reset password"
+        size="sm"
+      >
         <Input label="New password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setResetTarget(null)}>Cancel</Button>
@@ -413,6 +548,51 @@ export function ManagerStudentsPage() {
             Reset
           </Button>
         </div>
+      </Modal>
+
+      <Modal
+        open={!!recoverTarget}
+        onClose={() => { setRecoverTarget(null); setRecovered(null) }}
+        title="Password recovery"
+        size="sm"
+      >
+        {!recovered ? (
+          <>
+            <p className="text-sm text-ink-600 dark:text-ink-300">
+              Passwords cannot be viewed. {recoverTarget?.profile?.full_name ?? 'This student'} will receive a temporary
+              password that must be changed at first sign-in.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => setRecoverTarget(null)}>Cancel</Button>
+              <Button loading={recoverMut.isPending} onClick={() => recoverMut.mutate()}>
+                Generate temporary password
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-ink-600 dark:text-ink-300">{recovered.message}</p>
+            <div className="mt-3 flex items-center gap-2 rounded-lg bg-ink-100 px-3 py-2 dark:bg-ink-800">
+              <code className="flex-1 break-all font-mono text-sm">{recovered.temporaryPassword}</code>
+              <Button
+                variant="ghost"
+                size="sm"
+                aria-label="Copy temporary password"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(recovered.temporaryPassword)
+                  setCopied(true)
+                }}
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-ink-500">This password is shown once and cannot be retrieved again.</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => { setRecoverTarget(null); setRecovered(null) }}>Done</Button>
+              <Button onClick={() => { setRecovered(null); recoverMut.mutate() }}>Generate another</Button>
+            </div>
+          </>
+        )}
       </Modal>
     </div>
   )

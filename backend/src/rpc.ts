@@ -2,6 +2,7 @@ import type { RequestContext } from './security.ts'
 import { collection } from './db.ts'
 import { uuid, nowIso, hashPassword } from './util.ts'
 import { ApiError } from './errors.ts'
+import { allocateStudentId } from './services/students.ts'
 
 type Doc = Record<string, unknown>
 
@@ -35,19 +36,9 @@ function maxPadded(rows: Doc[], prefix: string, key: string, pad: number): strin
 const RPC_HANDLERS: Record<string, (args: Doc, ctx: RequestContext) => Promise<unknown>> = {
   async next_student_id(args, ctx): Promise<string> {
     requireManager(ctx)
-    const rows = await collection('students').find({}).toArray()
-    let max = 99
-    for (const r of rows) {
-      const v = String(r.student_id ?? '')
-      if (/^SOMSTAR[0-9]+$/.test(v)) {
-        const n = Number(v.slice(7))
-        if (Number.isInteger(n) && n > max) max = n
-      }
-    }
-    const next = max + 1
-    if (next < 100) return 'SOMSTAR100'
-    if (next > 600) throw new ApiError(400, 'Student ID range exhausted (SOMSTAR100–SOMSTAR600)')
-    return `SOMSTAR${next}`
+    // Lowest unused ID in SOMSTAR100-SOMSTAR700. IDs freed by a deleted student are
+    // reused; every other student keeps the ID it already has.
+    return allocateStudentId()
   },
 
   async next_teacher_id(args, ctx): Promise<string> {
@@ -212,6 +203,274 @@ const RPC_HANDLERS: Record<string, (args: Doc, ctx: RequestContext) => Promise<u
       updated_at: now,
     }
     await collection('finance_records').insertOne(row as never)
+    return row
+  },
+
+  async list_expenses(args, ctx): Promise<Doc[]> {
+    requireFinance(ctx)
+    const filter: Doc = {}
+    if (args.p_month != null && args.p_month !== '') filter.month = Number(args.p_month)
+    if (args.p_year != null && args.p_year !== '') filter.year = Number(args.p_year)
+    if (args.p_category) filter.category = String(args.p_category)
+    const limit = Number(args.p_limit ?? 200)
+    const offset = Number(args.p_offset ?? 0)
+
+    const records = await collection('expenses')
+      .find(filter)
+      .sort({ created_at: -1 })
+      .skip(offset)
+      .limit(limit)
+      .toArray()
+
+    return records.map((e) => ({
+      id: e.id,
+      expense_title: e.expense_title,
+      category: e.category,
+      amount: e.amount,
+      date: e.date,
+      month: e.month,
+      year: e.year,
+      paid_to: e.paid_to ?? null,
+      payment_method: e.payment_method ?? null,
+      reference: e.reference ?? null,
+      description: e.description ?? null,
+      recorded_by: e.recorded_by ?? null,
+      created_at: e.created_at,
+      updated_at: e.updated_at,
+    }))
+  },
+
+  async upsert_expense(args, ctx): Promise<Doc> {
+    requireFinance(ctx)
+    if (!ctx.isManager() && ctx.role !== 'finance_officer') throw new ApiError(403, 'Not authorized')
+    const month = Number(args.p_month)
+    const year = Number(args.p_year)
+    if (!Number.isInteger(month) || month < 1 || month > 12) throw new ApiError(400, 'invalid month')
+    if (!Number.isInteger(year) || year < 2020 || year > 2100) throw new ApiError(400, 'invalid year')
+
+    const existing = await collection('expenses').findOne({
+      category: String(args.p_category),
+      month,
+      year,
+    } as never)
+    const now = nowIso()
+
+    if (existing) {
+      const patch: Doc = {
+        expense_title: args.p_expense_title ?? existing.expense_title,
+        amount: args.p_amount ?? existing.amount,
+        date: args.p_date ?? existing.date,
+        month,
+        year,
+        paid_to: args.p_paid_to ?? existing.paid_to,
+        payment_method: args.p_payment_method ?? existing.payment_method,
+        reference: args.p_reference ?? existing.reference,
+        description: args.p_description ?? existing.description,
+        recorded_by: args.p_recorded_by ?? existing.recorded_by ?? null,
+        updated_at: now,
+      }
+      const merged: Doc = { ...(existing as unknown as Doc), ...patch }
+      await collection('expenses').replaceOne(
+        { _id: (existing as unknown as { _id: unknown })._id } as never,
+        merged as never,
+      )
+      return merged
+    }
+
+    const row: Doc = {
+      id: uuid(),
+      expense_title: args.p_expense_title,
+      category: args.p_category,
+      amount: args.p_amount,
+      date: args.p_date,
+      month,
+      year,
+      paid_to: args.p_paid_to ?? null,
+      payment_method: args.p_payment_method ?? null,
+      reference: args.p_reference ?? null,
+      description: args.p_description ?? null,
+      recorded_by: args.p_recorded_by ?? null,
+      created_at: now,
+      updated_at: now,
+    }
+    await collection('expenses').insertOne(row as never)
+    return row
+  },
+
+  async list_salaries(args, ctx): Promise<Doc[]> {
+    requireFinance(ctx)
+    const filter: Doc = {}
+    if (args.p_month != null && args.p_month !== '') filter.month = Number(args.p_month)
+    if (args.p_year != null && args.p_year !== '') filter.year = Number(args.p_year)
+    const limit = Number(args.p_limit ?? 200)
+    const offset = Number(args.p_offset ?? 0)
+
+    const records = await collection('salaries')
+      .find(filter)
+      .sort({ created_at: -1 })
+      .skip(offset)
+      .limit(limit)
+      .toArray()
+
+    return records.map((s) => ({
+      id: s.id,
+      employee_name: s.employee_name,
+      employee_id: s.employee_id ?? null,
+      position: s.position,
+      salary_amount: s.salary_amount,
+      month: s.month,
+      year: s.year,
+      payment_date: s.payment_date,
+      payment_status: s.payment_status,
+      payment_method: s.payment_method ?? null,
+      notes: s.notes ?? null,
+      recorded_by: s.recorded_by ?? null,
+      created_at: s.created_at,
+      updated_at: s.updated_at,
+    }))
+  },
+
+  async upsert_salary(args, ctx): Promise<Doc> {
+    requireFinance(ctx)
+    if (!ctx.isManager() && ctx.role !== 'finance_officer') throw new ApiError(403, 'Not authorized')
+    const month = Number(args.p_month)
+    const year = Number(args.p_year)
+    if (!Number.isInteger(month) || month < 1 || month > 12) throw new ApiError(400, 'invalid month')
+    if (!Number.isInteger(year) || year < 2020 || year > 2100) throw new ApiError(400, 'invalid year')
+
+    const existing = await collection('salaries').findOne({
+      employee_name: String(args.p_employee_name),
+      month,
+      year,
+    } as never)
+    const now = nowIso()
+
+    if (existing) {
+      const patch: Doc = {
+        employee_id: args.p_employee_id ?? existing.employee_id,
+        position: args.p_position ?? existing.position,
+        salary_amount: args.p_salary_amount ?? existing.salary_amount,
+        month,
+        year,
+        payment_date: args.p_payment_date ?? existing.payment_date,
+        payment_status: args.p_payment_status ?? existing.payment_status,
+        payment_method: args.p_payment_method ?? existing.payment_method,
+        notes: args.p_notes ?? existing.notes,
+        recorded_by: args.p_recorded_by ?? existing.recorded_by ?? null,
+        updated_at: now,
+      }
+      const merged: Doc = { ...(existing as unknown as Doc), ...patch }
+      await collection('salaries').replaceOne(
+        { _id: (existing as unknown as { _id: unknown })._id } as never,
+        merged as never,
+      )
+      return merged
+    }
+
+    const row: Doc = {
+      id: uuid(),
+      employee_name: args.p_employee_name,
+      employee_id: args.p_employee_id ?? null,
+      position: args.p_position,
+      salary_amount: args.p_salary_amount,
+      month,
+      year,
+      payment_date: args.p_payment_date,
+      payment_status: args.p_payment_status ?? 'paid',
+      payment_method: args.p_payment_method ?? null,
+      notes: args.p_notes ?? null,
+      recorded_by: args.p_recorded_by ?? null,
+      created_at: now,
+      updated_at: now,
+    }
+    await collection('salaries').insertOne(row as never)
+    return row
+  },
+
+  async list_other_income(args, ctx): Promise<Doc[]> {
+    requireFinance(ctx)
+    const filter: Doc = {}
+    if (args.p_month != null && args.p_month !== '') filter.month = Number(args.p_month)
+    if (args.p_year != null && args.p_year !== '') filter.year = Number(args.p_year)
+    const limit = Number(args.p_limit ?? 200)
+    const offset = Number(args.p_offset ?? 0)
+
+    const records = await collection('other_income')
+      .find(filter)
+      .sort({ created_at: -1 })
+      .skip(offset)
+      .limit(limit)
+      .toArray()
+
+    return records.map((i) => ({
+      id: i.id,
+      income_title: i.income_title,
+      category: i.category,
+      amount: i.amount,
+      date: i.date,
+      month: i.month,
+      year: i.year,
+      payment_method: i.payment_method ?? null,
+      reference: i.reference ?? null,
+      description: i.description ?? null,
+      recorded_by: i.recorded_by ?? null,
+      created_at: i.created_at,
+      updated_at: i.updated_at,
+    }))
+  },
+
+  async upsert_other_income(args, ctx): Promise<Doc> {
+    requireFinance(ctx)
+    if (!ctx.isManager() && ctx.role !== 'finance_officer') throw new ApiError(403, 'Not authorized')
+    const month = Number(args.p_month)
+    const year = Number(args.p_year)
+    if (!Number.isInteger(month) || month < 1 || month > 12) throw new ApiError(400, 'invalid month')
+    if (!Number.isInteger(year) || year < 2020 || year > 2100) throw new ApiError(400, 'invalid year')
+
+    const existing = await collection('other_income').findOne({
+      income_title: String(args.p_income_title),
+      month,
+      year,
+    } as never)
+    const now = nowIso()
+
+    if (existing) {
+      const patch: Doc = {
+        category: args.p_category ?? existing.category,
+        amount: args.p_amount ?? existing.amount,
+        date: args.p_date ?? existing.date,
+        month,
+        year,
+        payment_method: args.p_payment_method ?? existing.payment_method,
+        reference: args.p_reference ?? existing.reference,
+        description: args.p_description ?? existing.description,
+        recorded_by: args.p_recorded_by ?? existing.recorded_by ?? null,
+        updated_at: now,
+      }
+      const merged: Doc = { ...(existing as unknown as Doc), ...patch }
+      await collection('other_income').replaceOne(
+        { _id: (existing as unknown as { _id: unknown })._id } as never,
+        merged as never,
+      )
+      return merged
+    }
+
+    const row: Doc = {
+      id: uuid(),
+      income_title: args.p_income_title,
+      category: args.p_category,
+      amount: args.p_amount,
+      date: args.p_date,
+      month,
+      year,
+      payment_method: args.p_payment_method ?? null,
+      reference: args.p_reference ?? null,
+      description: args.p_description ?? null,
+      recorded_by: args.p_recorded_by ?? null,
+      created_at: now,
+      updated_at: now,
+    }
+    await collection('other_income').insertOne(row as never)
     return row
   },
 

@@ -39,116 +39,275 @@ export async function getFinanceRecord(id: string): Promise<FinanceRecord> {
   return record
 }
 
-/** Finance officer (or manager) create. */
-export async function createFinanceRecord(input: {
-  studentId: string
-  classId?: string | null
+/** Finance officer (or manager) summary for a specific month/year.
+ *  Provides full dashboard data including income, expenses, salaries, and student stats. */
+export async function financeSummary(year?: number, month?: number) {
+  const y = year ?? new Date().getFullYear()
+  const m = month ?? null
+
+  // Active academic year: scopes the student denominator so a month is never compared
+  // against students from a different cohort.
+  const { data: years, error: yearError } = await api
+    .from('academic_years')
+    .select('id')
+    .eq('is_active', true)
+  if (yearError) throw serviceError(yearError, 'Failed to load academic year')
+  const academicYearId = (years ?? [])[0]?.id ?? null
+
+  // Finance records for the selected month/year
+  let finQuery = api.from('finance_records').select('status, amount')
+  finQuery = finQuery.eq('year', y)
+  if (m) finQuery = finQuery.eq('month', m)
+  const { data: finData, error: finError } = await finQuery
+  if (finError) throw serviceError(finError, 'Failed to load finance summary')
+
+  // Expenses for the selected month/year
+  let expQuery = api.from('expenses').select('category, amount')
+  expQuery = expQuery.eq('year', y)
+  if (m) expQuery = expQuery.eq('month', m)
+  const { data: expData, error: expError } = await expQuery
+  if (expError) throw serviceError(expError, 'Failed to load expenses summary')
+
+  // Salaries for the selected month/year
+  let salQuery = api.from('salaries').select('salary_amount, payment_status')
+  salQuery = salQuery.eq('year', y)
+  if (m) salQuery = salQuery.eq('month', m)
+  const { data: salData, error: salError } = await salQuery
+  if (salError) throw serviceError(salError, 'Failed to load salaries summary')
+
+  // Other income for the selected month/year
+  let oiQuery = api.from('other_income').select('amount')
+  oiQuery = oiQuery.eq('year', y)
+  if (m) oiQuery = oiQuery.eq('month', m)
+  const { data: oiData, error: oiError } = await oiQuery
+  if (oiError) throw serviceError(oiError, 'Failed to load other income summary')
+
+  // Compute finance record stats
+  const byStatus = { paid: 0, unpaid: 0, scholarship_nb: 0 }
+  let totalAmount = 0
+  let collectedAmount = 0
+  let studentFeeIncome = 0
+  let outstandingFees = 0
+
+  for (const r of finData ?? []) {
+    const status = r.status as PaymentStatus
+    byStatus[status] = (byStatus[status] ?? 0) + 1
+    const amt = Number(r.amount ?? 0)
+    totalAmount += amt
+    if (status === 'paid') {
+      collectedAmount += amt
+    } else if (status === 'unpaid') {
+      outstandingFees += amt
+    }
+  }
+
+  studentFeeIncome = collectedAmount
+
+  // Compute expense stats
+  let totalExpenses = 0
+  const expenseByCategory: Record<string, number> = {}
+  for (const e of expData ?? []) {
+    const cat = e.category ?? 'other'
+    const amt = Number(e.amount ?? 0)
+    totalExpenses += amt
+    expenseByCategory[cat] = (expenseByCategory[cat] ?? 0) + amt
+  }
+
+  // Compute salary stats
+  let totalSalaries = 0
+  let totalStaffSalaries = 0
+  const salaryByStatus: Record<string, number> = { paid: 0, unpaid: 0 }
+  for (const s of salData ?? []) {
+    const amt = Number(s.salary_amount ?? 0)
+    totalSalaries += amt
+    const ps = s.payment_status ?? 'paid'
+    salaryByStatus[ps] = (salaryByStatus[ps] ?? 0) + 1
+    if (ps === 'unpaid') {
+      totalStaffSalaries += amt
+    }
+  }
+
+  // Compute other income stats
+  let otherIncome = 0
+  for (const o of oiData ?? []) {
+    otherIncome += Number(o.amount ?? 0)
+  }
+
+  const totalIncome = studentFeeIncome + otherIncome
+  const netBalance = totalIncome - totalExpenses
+
+  // Total enrolled students: this is the denominator for "paid X of Y", and it must be
+  // scoped to the same year so a month is never compared against a different cohort.
+  const { data: studentData, error: studentError } = await api
+    .from('students')
+    .select('id')
+    .eq('academic_year_id', academicYearId)
+  if (studentError) throw serviceError(studentError, 'Failed to load student count')
+  const totalStudents = academicYearId ? (studentData ?? []).length : 0
+
+  return {
+    year: y,
+    month: m ?? null,
+    paid: byStatus.paid,
+    unpaid: byStatus.unpaid,
+    scholarship_nb: byStatus.scholarship_nb,
+    totalStudents,
+    totalAmount,
+    collectedAmount,
+    studentFeeIncome,
+    otherIncome,
+    totalIncome,
+    totalExpenses,
+    expenseByCategory,
+    totalSalaries,
+    totalStaffSalaries,
+    salaryByStatus,
+    netBalance,
+    outstandingFees,
+  }
+}
+
+export interface Expense {
+  id: string
+  expense_title: string
+  category: string
+  amount: number
+  date: string
   month: number
   year: number
-  status: PaymentStatus
-  amount?: number | null
-  notes?: string
-  recordedBy?: string
-}): Promise<FinanceRecord> {
+  paid_to: string | null
+  payment_method: string | null
+  reference: string | null
+  description: string | null
+  recorded_by: string | null
+}
+
+export interface Salary {
+  id: string
+  employee_name: string
+  employee_id: string | null
+  position: string
+  salary_amount: number
+  month: number
+  year: number
+  payment_date: string
+  payment_status: 'paid' | 'unpaid'
+  payment_method: string | null
+  notes: string | null
+  recorded_by: string | null
+}
+
+export interface OtherIncome {
+  id: string
+  income_title: string
+  category: string
+  amount: number
+  date: string
+  month: number
+  year: number
+  payment_method: string | null
+  reference: string | null
+  description: string | null
+  recorded_by: string | null
+}
+
+async function listByMonth<T>(table: string, year: number, month: number): Promise<T[]> {
   const { data, error } = await api
-    .from('finance_records')
-    .insert({
-      student_id: input.studentId,
-      class_id: input.classId ?? null,
-      month: input.month,
-      year: input.year,
-      status: input.status,
-      amount: input.amount ?? null,
-      notes: input.notes ?? null,
-      recorded_by: input.recordedBy ?? null,
-    })
-    .select('*, student:students(*, profile:profiles!students_profile_id_fkey(*))')
-    .single()
-
-  return assertData(data as FinanceRecord, error, 'Failed to create finance record')
+    .from(table)
+    .select('*')
+    .eq('year', year)
+    .eq('month', month)
+    .order('id', { ascending: true })
+  if (error) throw serviceError(error, `Failed to load ${table}`)
+  return (data ?? []) as T[]
 }
 
-export async function updateFinanceRecord(
-  id: string,
-  updates: {
-    status?: PaymentStatus
-    amount?: number | null
-    notes?: string | null
-    classId?: string | null
-    month?: number
-    year?: number
-  },
-): Promise<FinanceRecord> {
-  const patch: Record<string, unknown> = {}
-  if (updates.status !== undefined) patch.status = updates.status
-  if (updates.amount !== undefined) patch.amount = updates.amount
-  if (updates.notes !== undefined) patch.notes = updates.notes
-  if (updates.classId !== undefined) patch.class_id = updates.classId
-  if (updates.month !== undefined) patch.month = updates.month
-  if (updates.year !== undefined) patch.year = updates.year
-
-  const { data, error } = await api
-    .from('finance_records')
-    .update(patch)
-    .eq('id', id)
-    .select('*, student:students(*, profile:profiles!students_profile_id_fkey(*))')
-    .single()
-
-  return assertData(data as FinanceRecord, error, 'Failed to update finance record')
+export async function listExpenses(filters: { year: number; month: number }): Promise<Expense[]> {
+  return listByMonth<Expense>('expenses', filters.year, filters.month)
 }
 
-export async function deleteFinanceRecord(id: string): Promise<void> {
-  const { error } = await api.from('finance_records').delete().eq('id', id)
-  if (error) throw serviceError(error, 'Failed to delete finance record')
+export async function listSalaries(filters: { year: number; month: number }): Promise<Salary[]> {
+  return listByMonth<Salary>('salaries', filters.year, filters.month)
 }
 
-/** Finance manager read-focused summary. */
-export async function getFinanceSummary(year: number, month?: number) {
-  let query = api.from('finance_records').select('status, amount, month, year')
-  query = query.eq('year', year)
-  if (month) query = query.eq('month', month)
-
-  const { data, error } = await query
-  if (error) throw serviceError(error, 'Failed to load finance summary')
-
-  const summary = {
-    year,
-    month: month ?? null,
-    paid: 0,
-    unpaid: 0,
-    scholarship_nb: 0,
-    totalAmount: 0,
-    collectedAmount: 0,
-  }
-
-  for (const row of data ?? []) {
-    if (row.status === 'paid') summary.paid++
-    else if (row.status === 'unpaid') summary.unpaid++
-    else if (row.status === 'scholarship_nb') summary.scholarship_nb++
-
-    const amt = Number(row.amount ?? 0)
-    summary.totalAmount += amt
-    if (row.status === 'paid') summary.collectedAmount += amt
-  }
-
-  return summary
+export async function listOtherIncome(filters: { year: number; month: number }): Promise<OtherIncome[]> {
+  return listByMonth<OtherIncome>('other_income', filters.year, filters.month)
 }
 
-export async function financeSummary(year?: number) {
-  const y = year ?? new Date().getFullYear()
-  const { data, error } = await api.from('finance_records').select('status, amount, month').eq('year', y)
-  if (error) throw serviceError(error, 'Failed to load finance summary')
-  const rows = data ?? []
-  const byStatus = { paid: 0, unpaid: 0, scholarship_nb: 0 }
-  const byMonth: Record<number, { paid: number; unpaid: number; scholarship_nb: number }> = {}
-  let revenue = 0
-  for (const r of rows) {
-    byStatus[r.status as PaymentStatus] += 1
-    if (!byMonth[r.month]) byMonth[r.month] = { paid: 0, unpaid: 0, scholarship_nb: 0 }
-    byMonth[r.month][r.status as PaymentStatus] += 1
-    if (r.status === 'paid' && r.amount) revenue += Number(r.amount)
-  }
-  return { byStatus, byMonth, revenue, total: rows.length }
+/** Each entry is its own transaction row, so these insert rather than upsert:
+ *  expenses/salaries/other_income intentionally allow many rows per month+year. */
+async function insertRow<T>(table: string, row: Record<string, unknown>): Promise<T> {
+  const { data, error } = await api.from(table).insert(row)
+  if (error) throw serviceError(error, `Failed to save ${table}`)
+  return data as T
+}
+
+export async function upsertExpense(input: {
+  expense_title: string
+  category: string
+  amount: number
+  month: number
+  year: number
+  date?: string | null
+  paid_to?: string | null
+  payment_method?: string | null
+  reference?: string | null
+  description?: string | null
+  recorded_by?: string | null
+}): Promise<Expense> {
+  return insertRow<Expense>('expenses', {
+    ...input,
+    date: input.date ?? new Date().toISOString().slice(0, 10),
+    paid_to: input.paid_to ?? null,
+    payment_method: input.payment_method ?? null,
+    reference: input.reference ?? null,
+    description: input.description ?? null,
+    recorded_by: input.recorded_by ?? null,
+  })
+}
+
+export async function upsertSalary(input: {
+  employee_name: string
+  position: string
+  salary_amount: number
+  month: number
+  year: number
+  payment_date: string
+  payment_status: 'paid' | 'unpaid'
+  employee_id?: string | null
+  payment_method?: string | null
+  notes?: string | null
+  recorded_by?: string | null
+}): Promise<Salary> {
+  return insertRow<Salary>('salaries', {
+    ...input,
+    employee_id: input.employee_id ?? null,
+    payment_method: input.payment_method ?? null,
+    notes: input.notes ?? null,
+    recorded_by: input.recorded_by ?? null,
+  })
+}
+
+export async function upsertOtherIncome(input: {
+  income_title: string
+  category: string
+  amount: number
+  month: number
+  year: number
+  date?: string | null
+  payment_method?: string | null
+  reference?: string | null
+  description?: string | null
+  recorded_by?: string | null
+}): Promise<OtherIncome> {
+  return insertRow<OtherIncome>('other_income', {
+    ...input,
+    date: input.date ?? new Date().toISOString().slice(0, 10),
+    payment_method: input.payment_method ?? null,
+    reference: input.reference ?? null,
+    description: input.description ?? null,
+    recorded_by: input.recorded_by ?? null,
+  })
 }
 
 export async function upsertFinanceRecord(input: {

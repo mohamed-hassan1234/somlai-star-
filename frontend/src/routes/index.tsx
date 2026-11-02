@@ -281,7 +281,16 @@ const FinanceManagerOverviewPage = lazy(() =>
   import('@/pages/finance/FinancePages').then((m) => ({ default: m.FinanceManagerOverviewPage })),
 )
 const FinanceManagerReportsPage = lazy(() =>
-  import('@/pages/finance/FinancePages').then((m) => ({ default: m.FinanceManagerReportsPage })),
+  import('@/pages/finance/FinancePages').then((m) => ({ default: m.FinanceManagerReportsPage }))
+)
+const FinanceExpensesPage = lazy(() =>
+  import('@/pages/finance/FinanceExpensesPage').then((m) => ({ default: m.FinanceExpensesPage })),
+)
+const FinanceSalariesPage = lazy(() =>
+  import('@/pages/finance/FinanceSalariesPage').then((m) => ({ default: m.FinanceSalariesPage })),
+)
+const FinanceOtherIncomePage = lazy(() =>
+  import('@/pages/finance/FinanceOtherIncomePage').then((m) => ({ default: m.FinanceOtherIncomePage })),
 )
 
 const CommitteeOverviewPage = lazy(() =>
@@ -439,6 +448,9 @@ export function AppRoutes() {
           <Route path="/finance" element={<FinanceLayout />}>
             <Route index element={<FinanceOverviewPage />} />
             <Route path="payments" element={<FinancePaymentsPage />} />
+            <Route path="expenses" element={<FinanceExpensesPage />} />
+            <Route path="salaries" element={<FinanceSalariesPage />} />
+            <Route path="other-income" element={<FinanceOtherIncomePage />} />
             <Route path="notifications" element={<NotificationsPage />} />
           </Route>
         </Route>
@@ -449,6 +461,9 @@ export function AppRoutes() {
             <Route path="reports" element={<FinanceManagerReportsPage />} />
             <Route path="chat" element={<ChatPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="expenses" element={<FinanceExpensesPage />} />
+            <Route path="salaries" element={<FinanceSalariesPage />} />
+            <Route path="other-income" element={<FinanceOtherIncomePage />} />
           </Route>
         </Route>
 

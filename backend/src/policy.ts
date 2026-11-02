@@ -528,6 +528,53 @@ export const TABLE_POLICIES: Record<string, PolicyResolver> = {
     }
   },
 
+  // ------ expenses ------
+  expenses: (ctx, op) => {
+    if (op === 'DELETE') return ctx.isManager() ? always : null
+    if (op === 'INSERT' || op === 'UPDATE') return ctx.isManager() || ctx.roleIn(['finance_officer']) ? always : null
+    if (!ctx.isAuthenticated()) return null
+    return async (row) => {
+      if (ctx.isManager() || ctx.roleIn(['finance_officer', 'finance_manager'])) return true
+      if (String(row.recorded_by) === (await ctx.userId ?? '')) return true
+      if (ctx.isParent()) {
+        const set = await ctx.parentStudentIdsSet()
+        // expenses don't have student_id, so parent can view all
+        return true
+      }
+      return false
+    }
+  },
+
+  // ------ salaries ------
+  salaries: (ctx, op) => {
+    if (op === 'DELETE') return ctx.isManager() ? always : null
+    if (op === 'INSERT' || op === 'UPDATE') return ctx.isManager() || ctx.roleIn(['finance_officer']) ? always : null
+    if (!ctx.isAuthenticated()) return null
+    return async (row) => {
+      if (ctx.isManager() || ctx.roleIn(['finance_officer', 'finance_manager'])) return true
+      if (String(row.recorded_by) === (await ctx.userId ?? '')) return true
+      if (ctx.isParent()) {
+        return true
+      }
+      return false
+    }
+  },
+
+  // ------ other_income ------
+  other_income: (ctx, op) => {
+    if (op === 'DELETE') return ctx.isManager() ? always : null
+    if (op === 'INSERT' || op === 'UPDATE') return ctx.isManager() || ctx.roleIn(['finance_officer']) ? always : null
+    if (!ctx.isAuthenticated()) return null
+    return async (row) => {
+      if (ctx.isManager() || ctx.roleIn(['finance_officer', 'finance_manager'])) return true
+      if (String(row.recorded_by) === (await ctx.userId ?? '')) return true
+      if (ctx.isParent()) {
+        return true
+      }
+      return false
+    }
+  },
+
   // ------ outside activities ------
   outside_activity_committees: (ctx, op) => {
     if (op !== 'SELECT') return ctx.isManager() ? always : null

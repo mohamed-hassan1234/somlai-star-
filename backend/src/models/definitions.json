@@ -9,6 +9,10 @@
       "required": true,
       "unique": true
     },
+    "archived_login_id": {
+      "type": "text",
+      "required": false
+    },
     "full_name": {
       "type": "text",
       "required": true
@@ -1165,6 +1169,195 @@
       "default": "'USD'"
     },
     "notes": {
+      "type": "text",
+      "required": false
+    },
+    "recorded_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "expenses": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "expense_title": {
+      "type": "text",
+      "required": true
+    },
+    "category": {
+      "type": "text",
+      "required": true
+    },
+    "amount": {
+      "type": "numeric(12,2)",
+      "required": true
+    },
+    "date": {
+      "type": "date",
+      "required": true,
+      "default": "CURRENT_DATE"
+    },
+    "month": {
+      "type": "int",
+      "required": true
+    },
+    "year": {
+      "type": "int",
+      "required": true
+    },
+    "paid_to": {
+      "type": "text",
+      "required": false
+    },
+    "payment_method": {
+      "type": "text",
+      "required": false
+    },
+    "reference": {
+      "type": "text",
+      "required": false
+    },
+    "description": {
+      "type": "text",
+      "required": false
+    },
+    "recorded_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "salaries": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "employee_name": {
+      "type": "text",
+      "required": true
+    },
+    "employee_id": {
+      "type": "text",
+      "required": false
+    },
+    "position": {
+      "type": "text",
+      "required": true
+    },
+    "salary_amount": {
+      "type": "numeric(12,2)",
+      "required": true
+    },
+    "month": {
+      "type": "int",
+      "required": true
+    },
+    "year": {
+      "type": "int",
+      "required": true
+    },
+    "payment_date": {
+      "type": "date",
+      "required": true
+    },
+    "payment_status": {
+      "type": "text",
+      "required": true,
+      "enum": [
+        "paid",
+        "unpaid"
+      ],
+      "default": "'paid'"
+    },
+    "payment_method": {
+      "type": "text",
+      "required": false
+    },
+    "notes": {
+      "type": "text",
+      "required": false
+    },
+    "recorded_by": {
+      "type": "uuid",
+      "required": false,
+      "ref": "profiles"
+    },
+    "created_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    },
+    "updated_at": {
+      "type": "timestamptz",
+      "required": true,
+      "default": "now()"
+    }
+  },
+  "other_income": {
+    "id": {
+      "type": "uuid",
+      "required": true,
+      "default": "gen_random_uuid()"
+    },
+    "income_title": {
+      "type": "text",
+      "required": true
+    },
+    "category": {
+      "type": "text",
+      "required": true
+    },
+    "amount": {
+      "type": "numeric(12,2)",
+      "required": true
+    },
+    "date": {
+      "type": "date",
+      "required": true,
+      "default": "CURRENT_DATE"
+    },
+    "month": {
+      "type": "int",
+      "required": true
+    },
+    "year": {
+      "type": "int",
+      "required": true
+    },
+    "payment_method": {
+      "type": "text",
+      "required": false
+    },
+    "reference": {
+      "type": "text",
+      "required": false
+    },
+    "description": {
       "type": "text",
       "required": false
     },
