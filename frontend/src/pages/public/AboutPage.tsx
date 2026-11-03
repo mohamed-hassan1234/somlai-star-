@@ -15,7 +15,6 @@ import {
   FlaskConical,
   Quote,
   ArrowRight,
-  GraduationCap,
   Sparkles,
   CheckCheck,
 } from 'lucide-react'
@@ -81,7 +80,7 @@ export function AboutPage() {
             transition={{ duration: 0.5 }}
           >
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold-400/30 bg-white/5 px-4 py-1.5 text-sm font-medium text-gold-300 backdrop-blur">
-              <GraduationCap className="h-4 w-4" />
+              <img src="/logo.png" alt="" className="h-5 w-5 rounded-full object-cover" />
               Dharkeynley, Mogadishu
             </div>
             <h1 className="font-display text-4xl font-bold text-white sm:text-5xl">
@@ -257,9 +256,11 @@ export function AboutPage() {
             </p>
           </blockquote>
           <div className="relative mt-8 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-gold-400 to-gold-600 text-navy-900">
-              <GraduationCap className="h-6 w-6" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="Somali Star Academy"
+              className="h-12 w-12 rounded-full object-cover"
+            />
             <div>
               <p className="font-semibold text-white">The Principal</p>
               <p className="text-sm text-gold-400">Somali Star Academy</p>
