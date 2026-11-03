@@ -122,7 +122,9 @@ export function PublicLayout() {
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Phone className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" />
-                  +252 6X XXX XXXX
+                  <a href="tel:+252618106247" className="transition-colors duration-300 hover:text-gold-300">
+                    +252 61 810 6247
+                  </a>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Mail className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" />

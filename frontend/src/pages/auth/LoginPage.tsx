@@ -153,6 +153,11 @@ export function LoginPage() {
 
             <div className="mt-6 border-t border-ink-100 pt-5 text-center text-xs text-[#666666] dark:border-white/10 dark:text-white/50">
               Accounts are issued by the School Manager. Role is detected automatically after login.
+              <br />
+              Need help?{' '}
+              <a href="tel:+252618106247" className="font-medium text-navy-600 hover:text-gold-600 dark:text-white/80">
+                +252 61 810 6247
+              </a>
             </div>
 
             <Link
