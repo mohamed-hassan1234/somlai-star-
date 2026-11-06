@@ -228,6 +228,9 @@ export interface FinanceRecord {
   status: PaymentStatus
   amount: number | null
   notes: string | null
+  recorded_by?: string | null
+  created_at?: string
+  updated_at?: string
   student?: Student
 }
 

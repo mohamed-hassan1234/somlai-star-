@@ -16,6 +16,14 @@ function requireFinance(ctx: RequestContext): void {
   }
 }
 
+/** Finance Manager is strictly read-only for all financial mutations. */
+function requireFinanceWrite(ctx: RequestContext): void {
+  requireFinance(ctx)
+  if (!ctx.isManager() && ctx.role !== 'finance_officer') {
+    throw new ApiError(403, 'Finance Manager access is read-only')
+  }
+}
+
 function loginIdToEmail(loginId: string): string {
   return `${loginId.trim().toLowerCase()}@somalistar.internal`
 }
@@ -156,8 +164,7 @@ const RPC_HANDLERS: Record<string, (args: Doc, ctx: RequestContext) => Promise<u
   },
 
   async upsert_finance_record(args, ctx): Promise<Doc> {
-    requireFinance(ctx)
-    if (!ctx.isManager() && ctx.role !== 'finance_officer') throw new ApiError(403,'Finance Manager access is read-only')
+    requireFinanceWrite(ctx)
     const studentId = args.p_student_id ? String(args.p_student_id) : null
     const month = Number(args.p_month)
     const year = Number(args.p_year)
@@ -241,8 +248,7 @@ const RPC_HANDLERS: Record<string, (args: Doc, ctx: RequestContext) => Promise<u
   },
 
   async upsert_expense(args, ctx): Promise<Doc> {
-    requireFinance(ctx)
-    if (!ctx.isManager() && ctx.role !== 'finance_officer') throw new ApiError(403, 'Not authorized')
+    requireFinanceWrite(ctx)
     const month = Number(args.p_month)
     const year = Number(args.p_year)
     if (!Number.isInteger(month) || month < 1 || month > 12) throw new ApiError(400, 'invalid month')
@@ -331,8 +337,7 @@ const RPC_HANDLERS: Record<string, (args: Doc, ctx: RequestContext) => Promise<u
   },
 
   async upsert_salary(args, ctx): Promise<Doc> {
-    requireFinance(ctx)
-    if (!ctx.isManager() && ctx.role !== 'finance_officer') throw new ApiError(403, 'Not authorized')
+    requireFinanceWrite(ctx)
     const month = Number(args.p_month)
     const year = Number(args.p_year)
     if (!Number.isInteger(month) || month < 1 || month > 12) throw new ApiError(400, 'invalid month')
@@ -420,8 +425,7 @@ const RPC_HANDLERS: Record<string, (args: Doc, ctx: RequestContext) => Promise<u
   },
 
   async upsert_other_income(args, ctx): Promise<Doc> {
-    requireFinance(ctx)
-    if (!ctx.isManager() && ctx.role !== 'finance_officer') throw new ApiError(403, 'Not authorized')
+    requireFinanceWrite(ctx)
     const month = Number(args.p_month)
     const year = Number(args.p_year)
     if (!Number.isInteger(month) || month < 1 || month > 12) throw new ApiError(400, 'invalid month')

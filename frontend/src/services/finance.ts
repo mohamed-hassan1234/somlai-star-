@@ -14,7 +14,7 @@ export async function listFinanceRecords(filters?: {
     p_month: filters?.month ?? null,
     p_year: filters?.year ?? null,
     p_student_id: filters?.studentId ?? null,
-    p_limit: 200,
+    p_limit: 2000,
     p_offset: 0,
   })
   if (error) throw serviceError(error, 'Failed to load finance records')
