@@ -4,7 +4,11 @@ import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, rm } from 'node:fs/promises'
 import { resolve, sep } from 'node:path'
 
-export async function ensureTestMongo(port=27028) {
+/** Each test file gets its own mongod instance so closing one suite cannot tear
+ * down the database another suite is still using. Defaults keep the old port. */
+export const testMongoPort = Number(process.env.TEST_MONGO_PORT ?? 27028)
+
+export async function ensureTestMongo(port=testMongoPort) {
   const available=await new Promise<boolean>(resolve=>{
     const socket=createConnection({host:'127.0.0.1',port})
     socket.on('connect',()=>{socket.destroy();resolve(true)})

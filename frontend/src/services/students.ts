@@ -13,7 +13,28 @@ export interface CreateStudentPayload {
     classId: string
     academicYearId: string
     status: AccountStatus
+    avatarUrl?: string | null
   }
+}
+
+const AVATAR_BUCKET = 'avatars'
+const AVATAR_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif'
+export const STUDENT_IMAGE_ACCEPT = '.jpg,.jpeg,.png,.webp'
+const AVATAR_MAX_BYTES = 5 * 1024 * 1024
+
+/** Uploads a student photo through the existing storage service and returns its public URL. */
+export async function uploadStudentImage(file: File): Promise<string> {
+  if (!file.type.startsWith('image/')) throw new Error('Only image files are supported')
+  if (file.size > AVATAR_MAX_BYTES) throw new Error('Student images must be 5MB or smaller')
+  const extension = (file.name.split('.').pop() ?? 'jpg').toLowerCase()
+  const safeExtension = /^[a-z0-9]+$/.test(extension) ? extension : 'jpg'
+  const path = `pending/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${safeExtension}`
+  const { error } = await api.storage.from(AVATAR_BUCKET).upload(path, file, {
+    upsert: false,
+    contentType: file.type || undefined,
+  })
+  if (error) throw serviceError(error, 'Failed to upload student image')
+  return api.storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl
 }
 
 export async function listStudents(filters?: {
@@ -31,7 +52,11 @@ export async function listStudents(filters?: {
   const { data, error } = await query
   if (error) throw serviceError(error, 'Failed to load students')
 
-  let rows = (data ?? []) as Student[]
+  // Student Management lists active enrolment only: archived profiles belong to
+  // deleted students, and "left" is no longer part of the student lifecycle.
+  let rows = (data ?? []).filter((s) => s.profile?.status !== 'left').filter(
+    (s) => (s.profile as { deleted_at?: string | null } | undefined)?.deleted_at == null,
+  ) as Student[]
 
   if (filters?.status) {
     rows = rows.filter((s) => s.profile?.status === filters.status)
@@ -104,6 +129,7 @@ export async function updateStudent(
     notes?: string | null
     fullName?: string
     status?: AccountStatus
+    avatar_url?: string | null
   },
 ): Promise<Student> {
   const studentPatch: Record<string, unknown> = {}
@@ -119,13 +145,14 @@ export async function updateStudent(
     if (error) throw serviceError(error, 'Failed to update student')
   }
 
-  if (updates.fullName !== undefined || updates.status !== undefined || updates.phone !== undefined) {
+  if (updates.fullName !== undefined || updates.status !== undefined || updates.phone !== undefined || updates.avatar_url !== undefined) {
     const { data: student } = await api.from('students').select('profile_id').eq('id', id).single()
     if (student?.profile_id) {
       const profilePatch: Record<string, unknown> = {}
       if (updates.fullName !== undefined) profilePatch.full_name = updates.fullName
       if (updates.status !== undefined) profilePatch.status = updates.status
       if (updates.phone !== undefined) profilePatch.phone = updates.phone
+      if (updates.avatar_url !== undefined) profilePatch.avatar_url = updates.avatar_url
       if (Object.keys(profilePatch).length > 0) {
         const { error } = await api.from('profiles').update(profilePatch).eq('id', student.profile_id)
         if (error) throw serviceError(error, 'Failed to update student profile')
@@ -169,6 +196,47 @@ export async function resetStudentPassword(loginId: string, newPassword: string)
 
 export async function listStudentsByClass(classId: string) {
   return listStudents({ classId })
+}
+
+export interface DeleteStudentResult {
+  success: boolean
+  studentId: string
+  releasedStudentId: string
+  profileArchived: boolean
+  historicalRecordsPreserved: boolean
+  message: string
+}
+
+/**
+ * Deletes a student from Student Management. The SOMSTAR ID is released for reuse
+ * and the student is created from scratch next time, while attendance, finance,
+ * exam and practice records stay attached to the deleted record only.
+ */
+export async function deleteStudent(id: string): Promise<DeleteStudentResult> {
+  const { data, error } = await api.functions.invoke('delete-student', { body: { id } })
+  if (error) throw serviceError(error, 'Failed to delete student')
+  if (!data?.success) throw new Error('Failed to delete student')
+  return data as DeleteStudentResult
+}
+
+export interface PasswordRecoveryResult {
+  success: boolean
+  loginId: string
+  temporaryPassword: string
+  generated: boolean
+  mustChangePassword: boolean
+  message: string
+}
+
+/**
+ * Passwords are stored as one-way hashes and are never readable, so recovery
+ * returns a freshly generated temporary password that the student must change.
+ */
+export async function recoverStudentPassword(loginId: string): Promise<PasswordRecoveryResult> {
+  const { data, error } = await api.functions.invoke('student-password-recovery', { body: { loginId } })
+  if (error) throw serviceError(error, 'Failed to recover password')
+  if (!data?.success || !data?.temporaryPassword) throw new Error('Failed to recover password')
+  return data as PasswordRecoveryResult
 }
 
 export async function setStudentStatus(profileId: string, status: AccountStatus) {

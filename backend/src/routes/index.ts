@@ -38,6 +38,8 @@ router.post('/quizzes/attempts/:id/submit',protect,async (req,res) => {
 })
 router.post('/operations/create-user',protect,controller.handleCreateUser)
 router.post('/operations/reset-password',protect,controller.handleResetPassword)
+router.post('/operations/delete-student',protect,controller.handleDeleteStudent)
+router.post('/operations/student-password-recovery',protect,controller.handleStudentPasswordRecovery)
 router.post('/operations/ai-assistant',protect,controller.handleAiAssistant)
 router.post('/operations/backup-database',protect,controller.handleBackup)
 router.post('/operations/restore-database',protect,upload,controller.handleRestore)

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { cn, initials } from '@/lib/utils'
 import type { Profile } from '@/types'
 
@@ -27,17 +28,20 @@ export function Avatar({
   size?: keyof typeof sizes
   className?: string
 }) {
-  if (profile?.avatar_url) {
+  const [broken, setBroken] = useState(false)
+  const tone = profile?.role ? toneByRole[profile.role] : undefined
+
+  if (profile?.avatar_url && !broken) {
     return (
       <img
         src={profile.avatar_url}
         alt={profile.full_name}
+        onError={() => setBroken(true)}
         className={cn('shrink-0 rounded-full object-cover ring-1 ring-ink-200/70 dark:ring-ink-700/60', sizes[size], className)}
       />
     )
   }
 
-  const tone = profile?.role ? toneByRole[profile.role] : undefined
   return (
     <div
       aria-hidden

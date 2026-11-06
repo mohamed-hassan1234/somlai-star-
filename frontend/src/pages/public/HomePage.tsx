@@ -13,7 +13,6 @@ import {
   Megaphone,
   Newspaper,
   MapPin,
-  GraduationCap,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
@@ -166,10 +165,12 @@ export function HomePage() {
                 <div className="absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-gold-400/30 to-transparent blur-2xl" />
                 <div className="relative flex aspect-square w-80 items-center justify-center rounded-[2rem] border border-white/15 bg-white/5 p-10 backdrop-blur">
                   <div className="flex h-full w-full flex-col items-center justify-center rounded-[1.5rem] bg-gradient-to-br from-navy-700 to-navy-900 shadow-2xl">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-gold-400 to-gold-600 text-navy-900 shadow-lg shadow-gold-500/30">
-                      <GraduationCap className="h-10 w-10" />
-                    </div>
-                    <p className="mt-6 font-display text-xl font-semibold text-white">Somali Star</p>
+                    <img
+                      src="/logo.png"
+                      alt="Somali Star Academy"
+                      className="h-28 w-28 rounded-full object-cover shadow-lg shadow-gold-500/30"
+                    />
+                    <p className="mt-4 font-display text-xl font-semibold text-white">Somali Star</p>
                     <p className="text-sm tracking-widest text-gold-400 uppercase">Academy</p>
                     <div className="mt-6 flex items-center gap-2 rounded-full border border-gold-400/40 bg-gold-400/10 px-4 py-1.5 text-xs text-gold-300">
                       <Sparkles className="h-3.5 w-3.5" />

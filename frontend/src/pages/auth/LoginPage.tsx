@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { GraduationCap, UserRound, Sparkles, Lock } from 'lucide-react'
+import { UserRound, Sparkles, Lock, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import { loginSchema, type LoginInput } from '@/schemas'
 import { useAuth } from '@/providers/AuthProvider'
@@ -74,9 +74,11 @@ export function LoginPage() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-gold-400 to-gold-600 text-navy-900 shadow-lg shadow-gold-500/30">
-            <GraduationCap className="h-8 w-8" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="Somali Star Academy"
+            className="mb-6 h-20 w-20 rounded-full object-cover shadow-lg shadow-gold-500/30"
+          />
           <p className="font-display text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
             Somali Star <span className="text-gold-400">Academy</span>
           </p>
@@ -151,7 +153,20 @@ export function LoginPage() {
 
             <div className="mt-6 border-t border-ink-100 pt-5 text-center text-xs text-[#666666] dark:border-white/10 dark:text-white/50">
               Accounts are issued by the School Manager. Role is detected automatically after login.
+              <br />
+              Need help?{' '}
+              <a href="tel:+252618106247" className="font-medium text-navy-600 hover:text-gold-600 dark:text-white/80">
+                +252 61 810 6247
+              </a>
             </div>
+
+            <Link
+              to="/"
+              className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-navy-600 transition-colors duration-300 hover:bg-navy-600 hover:text-white dark:border-white/15 dark:text-white/70 dark:hover:bg-white/10"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Home
+            </Link>
           </div>
         </motion.section>
       </div>

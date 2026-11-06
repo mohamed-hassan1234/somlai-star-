@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
-import { ensureTestMongo } from './mongo.ts'
+import { ensureTestMongo, testMongoPort } from './mongo.ts'
 process.env.JWT_SECRET ??= 'isolated-test-secret-with-more-than-32-characters'
-process.env.MONGODB_URI = 'mongodb://127.0.0.1:27028/academy_test_'+randomUUID().replaceAll('-','')
+process.env.MONGODB_URI = `mongodb://127.0.0.1:${testMongoPort}/academy_test_`+randomUUID().replaceAll('-','')
 process.env.PUBLIC_BASE_URL ??= 'http://127.0.0.1:5001/api'
 process.env.CLIENT_URL ??= 'http://localhost:5173'
 process.env.STORAGE_ROOT ??= '.test-uploads'

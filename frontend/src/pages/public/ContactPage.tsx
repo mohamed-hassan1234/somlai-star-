@@ -1,6 +1,6 @@
 import { request } from '@/services/httpClient'
 import { motion } from 'framer-motion'
-import { Mail, MapPin, Phone, Send } from 'lucide-react'
+import { Mail, MapPin, Phone, Send, type LucideIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -17,10 +17,10 @@ const contactSchema = z.object({
 
 type ContactInput = z.infer<typeof contactSchema>
 
-const contactInfo = [
+const contactInfo: { icon: LucideIcon; label: string; value: string; href?: string }[] = [
   { icon: MapPin, label: 'Address', value: 'Dharkeynley, Mogadishu, Somalia' },
-  { icon: Phone, label: 'Phone', value: '+252 6X XXX XXXX' },
-  { icon: Mail, label: 'Email', value: 'info@somalistaracademy.so' },
+  { icon: Phone, label: 'Phone', value: '+252 61 810 6247', href: 'tel:+252618106247' },
+  { icon: Mail, label: 'Email', value: 'info@somalistaracademy.so', href: 'mailto:info@somalistaracademy.so' },
 ]
 
 export function ContactPage() {
@@ -71,7 +71,16 @@ export function ContactPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-ink-900 dark:text-white">{item.label}</p>
-                <p className="text-sm text-ink-500 dark:text-ink-400">{item.value}</p>
+                {item.href ? (
+                  <a
+                    href={item.href}
+                    className="text-sm text-ink-500 transition-colors hover:text-brand-700 dark:text-ink-400 dark:hover:text-brand-300"
+                  >
+                    {item.value}
+                  </a>
+                ) : (
+                  <p className="text-sm text-ink-500 dark:text-ink-400">{item.value}</p>
+                )}
               </div>
             </div>
           ))}
