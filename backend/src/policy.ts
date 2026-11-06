@@ -512,6 +512,7 @@ export const TABLE_POLICIES: Record<string, PolicyResolver> = {
   },
 
   // ------ finance_records ------
+  // Finance Manager: SELECT only. INSERT/UPDATE/DELETE require school_manager or finance_officer.
   finance_records: (ctx, op) => {
     const ownStudent = memo(async () => (await ctx.studentId()) ?? '')
     if (op === 'DELETE') return ctx.isManager() ? always : null
@@ -529,6 +530,7 @@ export const TABLE_POLICIES: Record<string, PolicyResolver> = {
   },
 
   // ------ expenses ------
+  // Finance Manager: SELECT only.
   expenses: (ctx, op) => {
     if (op === 'DELETE') return ctx.isManager() ? always : null
     if (op === 'INSERT' || op === 'UPDATE') return ctx.isManager() || ctx.roleIn(['finance_officer']) ? always : null
@@ -546,6 +548,7 @@ export const TABLE_POLICIES: Record<string, PolicyResolver> = {
   },
 
   // ------ salaries ------
+  // Finance Manager: SELECT only.
   salaries: (ctx, op) => {
     if (op === 'DELETE') return ctx.isManager() ? always : null
     if (op === 'INSERT' || op === 'UPDATE') return ctx.isManager() || ctx.roleIn(['finance_officer']) ? always : null
@@ -561,6 +564,7 @@ export const TABLE_POLICIES: Record<string, PolicyResolver> = {
   },
 
   // ------ other_income ------
+  // Finance Manager: SELECT only.
   other_income: (ctx, op) => {
     if (op === 'DELETE') return ctx.isManager() ? always : null
     if (op === 'INSERT' || op === 'UPDATE') return ctx.isManager() || ctx.roleIn(['finance_officer']) ? always : null

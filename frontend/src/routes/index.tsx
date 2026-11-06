@@ -280,8 +280,11 @@ const FinancePaymentsPage = lazy(() =>
 const FinanceManagerOverviewPage = lazy(() =>
   import('@/pages/finance/FinancePages').then((m) => ({ default: m.FinanceManagerOverviewPage })),
 )
-const FinanceManagerReportsPage = lazy(() =>
-  import('@/pages/finance/FinancePages').then((m) => ({ default: m.FinanceManagerReportsPage }))
+const FinanceManagerClassReportPage = lazy(() =>
+  import('@/pages/finance/FinancePages').then((m) => ({ default: m.FinanceManagerClassReportPage })),
+)
+const FinanceManagerStudentPage = lazy(() =>
+  import('@/pages/finance/FinancePages').then((m) => ({ default: m.FinanceManagerStudentPage })),
 )
 const FinanceExpensesPage = lazy(() =>
   import('@/pages/finance/FinanceExpensesPage').then((m) => ({ default: m.FinanceExpensesPage })),
@@ -458,12 +461,11 @@ export function AppRoutes() {
         <Route element={roleGuard(['finance_manager'])}>
           <Route path="/finance-manager" element={<FinanceManagerLayout />}>
             <Route index element={<FinanceManagerOverviewPage />} />
-            <Route path="reports" element={<FinanceManagerReportsPage />} />
+            <Route path="class-report" element={<FinanceManagerClassReportPage />} />
+            <Route path="reports" element={<Navigate to="/finance-manager/class-report" replace />} />
+            <Route path="students/:studentId" element={<FinanceManagerStudentPage />} />
             <Route path="chat" element={<ChatPage />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="expenses" element={<FinanceExpensesPage />} />
-            <Route path="salaries" element={<FinanceSalariesPage />} />
-            <Route path="other-income" element={<FinanceOtherIncomePage />} />
+            <Route path="profile" element={<TeacherProfilePage />} />
           </Route>
         </Route>
 

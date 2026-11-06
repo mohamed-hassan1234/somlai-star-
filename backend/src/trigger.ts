@@ -515,7 +515,7 @@ async function financeNotify(row: Doc): Promise<void> {
     title,
     `Status updated to ${status} by a manager.`,
     'finance',
-    '/finance-manager/reports',
+    '/finance-manager',
   )
 }
 

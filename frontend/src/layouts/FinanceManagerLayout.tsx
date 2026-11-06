@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, Bell, MessageCircle, Wallet } from 'lucide-react'
+import { LayoutDashboard, FileBarChart, MessageCircle, User } from 'lucide-react'
 import { DashboardLayout } from './DashboardLayout'
 
 const icon = 'h-4 w-4'
@@ -9,12 +9,9 @@ export function FinanceManagerLayout() {
       title="Finance Manager"
       nav={[
         { to: '/finance-manager', label: 'Overview', icon: <LayoutDashboard className={icon} />, end: true },
-        { to: '/finance-manager/reports', label: 'Reports', icon: <BarChart3 className={icon} /> },
+        { to: '/finance-manager/class-report', label: 'Class Financial Report', icon: <FileBarChart className={icon} /> },
         { to: '/finance-manager/chat', label: 'Chat', icon: <MessageCircle className={icon} /> },
-        { to: '/finance-manager/notifications', label: 'Notifications', icon: <Bell className={icon} /> },
-        { to: '/finance-manager/expenses', label: 'Expenses', icon: <Wallet className={icon} /> },
-        { to: '/finance-manager/salaries', label: 'Salaries', icon: <Wallet className={icon} /> },
-        { to: '/finance-manager/other-income', label: 'Other Income', icon: <Wallet className={icon} /> },
+        { to: '/finance-manager/profile', label: 'Profile', icon: <User className={icon} /> },
       ]}
     />
   )

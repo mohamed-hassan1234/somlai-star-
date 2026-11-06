@@ -1,4 +1,4 @@
-import { LayoutDashboard, Wallet, Bell } from 'lucide-react'
+import { LayoutDashboard, Wallet, Bell, FileBarChart, MessageCircle, User } from 'lucide-react'
 import { DashboardLayout, type NavItem } from '@/layouts/DashboardLayout'
 
 export function FinanceLayout() {
@@ -13,8 +13,9 @@ export function FinanceLayout() {
 export function FinanceManagerLayout() {
   const nav: NavItem[] = [
     { to: '/finance-manager', label: 'Overview', icon: <LayoutDashboard className="h-4 w-4" />, end: true },
-    { to: '/finance-manager/reports', label: 'Reports', icon: <Wallet className="h-4 w-4" /> },
-    { to: '/finance-manager/notifications', label: 'Notifications', icon: <Bell className="h-4 w-4" /> },
+    { to: '/finance-manager/class-report', label: 'Class Financial Report', icon: <FileBarChart className="h-4 w-4" /> },
+    { to: '/finance-manager/chat', label: 'Chat', icon: <MessageCircle className="h-4 w-4" /> },
+    { to: '/finance-manager/profile', label: 'Profile', icon: <User className="h-4 w-4" /> },
   ]
   return <DashboardLayout title="Finance Manager" nav={nav} />
 }
